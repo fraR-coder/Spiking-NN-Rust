@@ -2,7 +2,7 @@
 
 pub mod snn;
 
-use crate::snn::model::lif::*;
+use crate::snn::model::{lif::*,Model};
 
 fn main() {
     let config=Configuration::new(1.0,2.0,3.0,4.0);
@@ -14,5 +14,5 @@ fn main() {
     let ts=1;
 
 
-    println!("res: {:?}", handle_spike(&mut neuron1, weighted_input_val, ts));
+    println!("res: {}", LeakyIntegrateFire::handle_spike(&mut neuron1, weighted_input_val, ts));
 }
