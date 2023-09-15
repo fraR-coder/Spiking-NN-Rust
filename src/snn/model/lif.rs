@@ -60,3 +60,26 @@ impl Configuration {
         }
     }
 }
+
+
+pub fn handle_spike(neuron: &mut LifNeuron, weighted_input_val: f64, ts: u128) -> f64 {
+    // This early exit serves as a small optimization
+    if weighted_input_val == 0.0 {
+        return 0.0;
+    }
+
+    let delta_t: f64 = (ts - neuron.ts_old) as f64;
+    neuron.ts_old = ts;
+
+    // compute the new v_mem value
+    neuron.v_mem = neuron.v_rest
+        + (neuron.v_mem - neuron.v_rest) * (-delta_t / neuron.tau).exp()
+        + weighted_input_val;
+
+    if neuron.v_mem > neuron.v_th {
+        neuron.v_mem = neuron.v_reset;
+        1.
+    } else {
+        0.
+    }
+}
