@@ -1,5 +1,5 @@
 //! Implementation of the Leaky Integrate and Fire (LIF) model for Spiking Neural Networks
-use crate::Model;
+use crate::snn::model::Model;
 
 #[derive(Clone, Debug)]
 pub struct LifNeuron {
@@ -30,15 +30,16 @@ pub struct Configuration {
 // IMPLEMENTATION FOR LIF NEURONS & LIF NEURON CONFIG
 
 impl LifNeuron {
-    pub fn new(v_rest: f64, v_reset: f64, v_threshold: f64, tau: f64) -> LifNeuron {
+    pub fn new(v_rest: f64, v_reset: f64, v_th: f64, tau: f64) -> LifNeuron {
         LifNeuron {
             // parameters
             v_rest,
             v_reset,
-            v_threshold,
+            v_th,
             tau,
             v_mem: 0.0, //inizlamente a 0?
             ts_old: 0,
+            stuck_at_zero: false,
         }
     }
 
