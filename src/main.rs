@@ -15,4 +15,7 @@ fn main() {
 
 
     println!("res: {}", LeakyIntegrateFire::handle_spike(&mut neuron1, weighted_input_val, ts));
+
+    let v=LifNeuron::new_vec(config, 4);
+    println!("{:?}",v);
 }

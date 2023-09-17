@@ -46,6 +46,18 @@ impl LifNeuron {
     pub fn from_conf(nc: &Configuration) -> LifNeuron {
         Self::new(nc.v_rest, nc.v_reset, nc.v_threshold, nc.tau)
     }
+
+    /// Create a new array of n [LifNeuron] structs, starting from a given Configuration.
+
+    pub fn new_vec(conf: Configuration, n: usize) -> Vec<LifNeuron> {
+        let mut res: Vec<LifNeuron> = Vec::with_capacity(n);
+
+        for _i in 0..n {
+            res.push(LifNeuron::from_conf(&conf));
+        }
+
+        res
+    }
 }
 
 impl Configuration {
@@ -60,7 +72,6 @@ impl Configuration {
         }
     }
 }
-
 
 #[derive(Clone, Copy, Debug)]
 pub struct LeakyIntegrateFire;
