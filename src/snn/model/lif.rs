@@ -11,8 +11,6 @@ pub struct LifNeuron {
     pub v_th: f64,
     /// Membrane's time constant. This is the product of its capacity and resistance
     pub tau: f64,
-    /// Flag to mark bit change
-    pub stuck_at_zero: bool,
 
     pub v_mem: f64,
     pub ts_old: u128,
@@ -39,7 +37,6 @@ impl LifNeuron {
             tau,
             v_mem: 0.0, //inizlamente a 0?
             ts_old: 0,
-            stuck_at_zero: false,
         }
     }
 
