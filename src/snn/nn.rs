@@ -1,4 +1,5 @@
 
+
 #[derive(Clone)]
 pub struct NNBuilder<M: Model> {
     /// Inner, growing [NN]

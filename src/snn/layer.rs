@@ -28,18 +28,21 @@ impl<M: Model> Layer<M> {
         }
     }
 
+     /// Return the number of neurons in this [Layer]
     pub fn num_neurons(&self) -> usize {
         self.neurons.len()
     }
 
+      /// Get the specified neuron, or [None] if the index is out of bounds.
     pub fn get_neuron(&self, neuron: usize) -> Option<&M::Neuron> {
         self.neurons.get(neuron)
     }
 
+    /// Get a mutable reference to the specified neuron, or [None] if the index is out of bounds.
     pub fn get_neuron_mut(&mut self, neuron: usize) -> Option<&mut M::Neuron> {
         self.neurons.get_mut(neuron)
     }
-
+/// Get the intra-layer weight from and to the specified neurons, or [None] if any index is out of bounds.
     pub fn get_intra_weight(&self, from: usize, to: usize) -> Option<f64> {
         self.intra_weights.get((from, to)).copied()
     }
