@@ -1,4 +1,6 @@
 use std::ops::{Index, IndexMut};
+extern crate nalgebra as na;
+
 use na::{DMatrix, Vector3};
 use crate::Model;
 
@@ -11,9 +13,22 @@ use crate::Model;
 pub struct Layer<M: Model> {
     /// List of all neurons in this layer
     pub(crate) neurons: Vec<M::Neuron>,
-    /// Matrix of the input weights. For the first layer, this must be a square diagonal matrix.
-    pub(crate) input_weights: DMatrix<f64>,
+    // Matrix of the input weights. For the first layer, this must be a square diagonal matrix.
+    /*pub(crate) input_weights: DMatrix<f64>,
     /// Square matrix of the intra-layer weights
     pub(crate) intra_weights: DMatrix<f64>
+    */
 }
+
+impl <M:Model> Layer<M> {
+    pub fn new(neuron: M::Neuron) -> Layer<M> {
+        Layer{
+            neurons:Vec::new(),
+        
+
+        }
+    }
+
+}
+
 
