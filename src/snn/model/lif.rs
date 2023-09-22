@@ -81,6 +81,19 @@ impl Model for LeakyIntegrateFire {
 
     type Config = Configuration;
 
+    /// Update the value of current membrane tension.
+    /// When the neuron receives one or more impulses, it computes the new tension of the membrane
+    /// 
+    /// 
+   
+    /// 
+    /// This neuron receives a spike at time of spike _ts_ from a number of its input synapses.
+    /// The overall weighted input value of this spike (i.e. the sum, across every lit up input synapse,
+    /// of the weight of that synapse) is provided via the _weighted_input_val_ parameter.
+    /// 
+    /// The output of this function is 1.0 iff the neuron has generated a new spike at time _ts_, or 0.0 otherwise.
+    /// 
+    /// 
     fn handle_spike(neuron: &mut LifNeuron, weighted_input_val: f64, ts: u128) -> f64 {
         // This early exit serves as a small optimization
         if weighted_input_val == 0.0 {
