@@ -2,7 +2,7 @@ use std::ops::{Index, IndexMut};
 extern crate nalgebra as na;
 
 use crate::Model;
-use na::{DMatrix, Vector3};
+use na::{DMatrix};  //guarda metodi from_fn e from_vec
 
 /// A single layer in the neural network
 ///
@@ -45,5 +45,14 @@ impl<M: Model> Layer<M> {
 /// Get the intra-layer weight from and to the specified neurons, or [None] if any index is out of bounds.
     pub fn get_intra_weight(&self, from: usize, to: usize) -> Option<f64> {
         self.intra_weights.get((from, to)).copied()
+    }
+    /// Get a mutable reference to the intra-layer weight from and to the specified neurons, or [None] if any index is out of bounds.
+    pub fn get_intra_weight_mut(&mut self, from: usize, to: usize) -> Option<&mut f64> {
+        self.intra_weights.get_mut((from, to))
+    }
+
+     /// Returns an ordered iterator over all the neurons in this layer.
+    pub fn iter_neurons(&self) -> <&Vec<M::Neuron> as IntoIterator>::IntoIter {
+        self.neurons.iter()
     }
 }
