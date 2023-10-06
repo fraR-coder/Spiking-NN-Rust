@@ -5,6 +5,8 @@ use crate::snn::layer::Layer;
 use nalgebra::DMatrix;
 use crate::snn::model::lif::LifNeuron;
 
+use super::Spike;
+
 
 #[derive(Clone)]
 pub struct NN<M: Model> {
@@ -55,18 +57,26 @@ impl<M: Model> NN<M> {
         Ok(self)
     }
 
-//NON SI PUO FARE
+//NON SI PUO FARE RECURSIVE, e dovrei fare visita in ampiezza non profondità :(
 //I LAYER NON SANNO CHI è IL LAYER SUCCESSIVO
     pub fn solve(mut self,input:Vec<u8>){
 
 
         for _i in input{
+            let mut spike_vec:Vec<Spike>=Vec::new();
             for layer in self.layers.iter(){
-
-                //fai roba recursiva
                 
+                for lif in layer.neurons.iter(){
 
+                    //calcola valore input pesato con dot product, usa spike vec 
+                    //chiama handle spike  (è difficile senno l'avrei fatto ora )
+                    //se genera spike aggiungi al vec spike, segna anche se non ha fatto spike
+
+                    
+                }
             }
+
+            //alla fine spike vec è vettore che dice quali enuroni del layer hanno fatto spike
 
         }
 
