@@ -65,14 +65,37 @@ fn f2() -> Result<NN<LeakyIntegrateFire>, String> {
 
     return nn;
 }
+pub fn recursive_funct(input: u8, layer:&Layer<LeakyIntegrateFire>){
+
+    let next_layer=todo!();
+    let neurons = &layer.neurons;
+    for neuron in neurons {
+        print!("neuron: ");
+        //do computations
+        let new_input = 1; //or 0 
+        if (1 > 0) {
+            //add check for spike generation
+            //genera un numero d spike pari al numero di neurons nel layer dopo
+            println!("spike generation");
+
+            recursive_funct(new_input,next_layer); //dovrei passare il layer successivo 
+        }
+    }
+}
+
+pub fn start(nn: NN<LeakyIntegrateFire>, input_vec: Vec<u8>) {
+    let layers = nn.layers;
+
+    let L0 = &layers[0];
+
+    let first_input = input_vec[0];
+
+    recursive_funct(first_input, L0)
+
+    
+}
 fn main() {
-
-
-    let nn=f2();
-
-
-
-
-
-
+    let nn = f2().unwrap();
+    let input = vec![0, 1];
+    start(nn, input);
 }

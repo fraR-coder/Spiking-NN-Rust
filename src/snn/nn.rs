@@ -9,7 +9,7 @@ use crate::snn::model::lif::LifNeuron;
 #[derive(Clone)]
 pub struct NN<M: Model> {
     /// All the sorted layers of the neural network
-    layers: Vec<Layer<M>>
+    pub layers: Vec<Layer<M>>
 }
 
 impl<M: Model> NN<M> {
@@ -55,7 +55,8 @@ impl<M: Model> NN<M> {
         Ok(self)
     }
 
-
+//NON SI PUO FARE
+//I LAYER NON SANNO CHI è IL LAYER SUCCESSIVO
     pub fn solve(mut self,input:Vec<u8>){
 
 
