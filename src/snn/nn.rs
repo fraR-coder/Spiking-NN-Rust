@@ -54,4 +54,21 @@ impl<M: Model> NN<M> {
 
         Ok(self)
     }
+
+
+    pub fn solve(mut self,input:Vec<u8>){
+
+
+        for _i in input{
+            for layer in self.layers.iter(){
+
+                //fai roba recursiva
+                
+
+            }
+
+        }
+
+    }
+
 }
