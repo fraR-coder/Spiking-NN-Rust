@@ -28,7 +28,7 @@ fn f1() {
         LeakyIntegrateFire::handle_spike(&mut neuron1, weighted_input_val, ts)
     );
 
-    let s = Spike::new(1, 1);
+    let s = Spike::new(1, 1,1);
 
     let s1 = Spike::vec_of_spike_for(1, vec![1, 3, 7]);
     let s2 = Spike::vec_of_spike_for(2, vec![2, 3, 5]);
