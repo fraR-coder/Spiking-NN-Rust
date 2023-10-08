@@ -1,4 +1,3 @@
-use std::ops::{Index, IndexMut};
 extern crate nalgebra as na;
 
 use crate::Model;
@@ -9,7 +8,7 @@ use na::{DMatrix};  //guarda metodi from_fn e from_vec
 /// This contains all the neurons of the layer, as well as the intra-layer weights and input weights from
 /// the previous layer.
 #[derive(Clone)]
-pub struct Layer<M: Model> {
+pub struct Layer<M: Model+Clone+'static> {
     /// List of all neurons in this layer
     pub(crate) neurons: Vec<M::Neuron>,
     // Matrix of the input weights. For the first layer, this must be a square diagonal matrix.
@@ -19,8 +18,8 @@ pub struct Layer<M: Model> {
     
 }
 
-impl<M: Model> Layer<M> {
-    pub fn new(neuron: M::Neuron) -> Layer<M> {
+impl<M: Model + Clone+'static> Layer<M> {
+    pub fn new(_neuron: M::Neuron) -> Layer<M> {
         Layer {
             neurons: Vec::new(),
             input_weights: DMatrix::<f64>::from_element(0, 0, 0.0),

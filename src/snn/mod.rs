@@ -1,5 +1,4 @@
 use std::fmt;
-use std::sync
 pub mod layer;
 pub mod model;
 pub mod nn;
@@ -38,12 +37,8 @@ impl Spike {
 
     //recive a matrix where each line is vector of Spikes and merge all the Spikes in a terminal verctor
     pub fn vec_of_all_spikes(spikes: Vec<Vec<Spike>>) -> Vec<Spike> {
-        let mut res: Vec<Spike> = Vec::new();
-
-        res=spikes.into_iter().flatten().collect();
-
+        let mut res: Vec<Spike> = spikes.into_iter().flatten().collect();
         res.sort(); //ascending
-    
         res
     }
 }

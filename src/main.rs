@@ -3,11 +3,9 @@ pub mod snn;
 use crate::snn::model::{lif::*, Model};
 
 use nalgebra::DMatrix;
-use snn::layer::*;
-use snn::Spike;
 
 use crate::snn::nn::NN;
-
+/*
 fn f1() {
     let config = Configuration::new(1.0, 2.0, 3.0, 4.0);
     let mut neuron1 = LifNeuron::from_conf(&config);
@@ -41,12 +39,12 @@ fn f1() {
 
     println!("{:?}", st);
 }
-
+*/
 fn f2() -> Result<NN<LeakyIntegrateFire>, String> {
     let config1 = Configuration::new(1.0, 2.0, 3.0, 4.0);
     let config2 = Configuration::new(3.0, 1.0, 5.0, 5.0);
 
-    let mut neuron1 = LifNeuron::from_conf(&config1);
+    let neuron1 = LifNeuron::from_conf(&config1);
     let neuron2 = LifNeuron::from_conf(&config2);
 
     let mut v = Vec::new();
@@ -54,10 +52,10 @@ fn f2() -> Result<NN<LeakyIntegrateFire>, String> {
     v.push(neuron2);
 
     let input_weights0 = DMatrix::from_vec(2, 2, vec![1.0, 0.0, 0.0, 2.0]);
-    let intra_weights0 = DMatrix::from_vec(2, 2, vec![0.0, 3.0, 4.0, 0.0]);
+    let intra_weights0 = DMatrix::from_vec(2, 2, vec![0.0, 1.0, 1.0, 0.0]);
 
     let input_weights1 = DMatrix::from_vec(2, 2, vec![1.0, 1.0, 2.0, 3.0]);
-    let intra_weights1 = DMatrix::from_vec(2, 2, vec![0.0, 1.0, 2.0, 0.0]);
+    let intra_weights1 = DMatrix::from_vec(2, 2, vec![0.0, 1.0, 1.0, 0.0]);
 
     let nn = NN::<LeakyIntegrateFire>::new()
         .layer(v.clone(), input_weights0, intra_weights0)?
@@ -66,10 +64,13 @@ fn f2() -> Result<NN<LeakyIntegrateFire>, String> {
     return nn;
 }
 
-
+fn test_solve(nn:NN<LeakyIntegrateFire>, input: Vec<u128>) {
+    let mut nn_temp = nn.clone();
+    nn_temp.solve(input);
+}
 
 fn main() {
     let nn = f2().unwrap();
-    let input = vec![0, 1];
-    
+    let input = vec![1,2,3,4,6,7,8,9,11,15,20,25,26,28,29,30];
+    test_solve(nn,input);
 }
