@@ -69,6 +69,7 @@ impl<M: Model+Clone> NN<M> {
     // inizialmente la funzione riceve un vettore ordinato di u128 (ovvero istanti di tempo in cui si applica
     // lo spike al primo layer. Successivamente si potrebbe cambiare implementazione...
     pub fn solve(&mut self, input: Vec<u128>) {
+        println!("Enter solve");
         let index_input: usize=0;
         let duration =  match input.last().clone() {
             Some(value) => value.clone(),
@@ -97,12 +98,11 @@ impl<M: Model+Clone> NN<M> {
                 None
             };
             let rx = channel_rx.remove(0);
-            //let layer_clone = self.layers.clone(); // Cloniamo i dati del layer per passarli al thread
             let mut layers = self.layers.clone();
             let thread_name=format!("layer_{}", layer_idx);
-            let handle = thread::Builder::new()
-                .name(thread_name) // Imposta il nome del thread
-                .spawn(move || {
+            let handle = thread:://Builder::new()
+                /*.name(thread_name) // Imposta il nome del thread*/
+                spawn(move || {
                 // il vettore di spike da passare al thread successivo
                 let mut layer_output: Vec<Spike> = vec![]; // Output del layer (Spike generati)
 
@@ -128,18 +128,18 @@ impl<M: Model+Clone> NN<M> {
                         if res==1. {
                             layer_output.push(Spike::new(ts,layer_idx,neuron_idx as usize))
                         }
-                        layer_output=vec![]
                     }
 
                     // Invio dei nuovi spike al layer successivo (se presente)
                     if let Some(next_tx) = &next_tx {
-                        println!("Thread: {}",thread::current().name().unwrap_or("Unnamed"));
                         next_tx.send(layer_output.clone()).expect("Error sending the vector of spikes");
                     } else {
                         for s in layer_output.iter(){
-                            println!("Output: {} (thread: {})",s.clone(),thread::current().name().unwrap_or("Unnamed"));
+                            println!("Output: {} (thread: {})",s.clone(),thread_name);
                         }
                     }
+                    layer_output=vec![];
+
                 } // end for
 
                 // Salvataggio degli spike generati dal layer nell'array
@@ -162,7 +162,7 @@ impl<M: Model+Clone> NN<M> {
 
         // Attendo il completamento di tutti i thread
         for handle in handles {
-            handle.expect("Failed to join a thread");
+            handle.join().expect("kk"); //.expect("Failed to join a thread");
         }
     }
 

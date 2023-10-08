@@ -41,8 +41,8 @@ fn f1() {
 }
 */
 fn f2() -> Result<NN<LeakyIntegrateFire>, String> {
-    let config1 = Configuration::new(1.0, 2.0, 3.0, 4.0);
-    let config2 = Configuration::new(3.0, 1.0, 5.0, 5.0);
+    let config1 = Configuration::new(1.0,1.0, 2.5, 1.0);
+    let config2 = Configuration::new(2.5, 1.0, 4.0, 5.0);
 
     let neuron1 = LifNeuron::from_conf(&config1);
     let neuron2 = LifNeuron::from_conf(&config2);
