@@ -1,6 +1,7 @@
 use crate::Model;
 use crate::snn::layer::Layer;
 use nalgebra::DMatrix;
+use ndarray::ArrayBase;
 use std::sync::{mpsc};
 use std::thread;
 
@@ -71,7 +72,7 @@ impl<M: Model+Clone> NN<M> {
     pub fn solve(&mut self, input: Vec<u128>) {
         println!("Enter solve");
         let index_input: usize=0;
-        let duration =  match input.last().clone() {
+        let duration =  match input.last().clone() {  //why cloning
             Some(value) => value.clone(),
             None => 0,
         };
@@ -81,7 +82,7 @@ impl<M: Model+Clone> NN<M> {
         let mut channel_rx = vec![];
         let (mut first_tx, _) = mpsc::channel();
         for i in 0..num_layers {
-            let (tx, rx): (mpsc::Sender<Vec<Spike>>, mpsc::Receiver<Vec<Spike>>) = mpsc::channel();
+            let (tx, rx):(mpsc::Sender<Vec<Spike>>, mpsc::Receiver<Vec<Spike>>) = mpsc::channel();
             if i==0{
                 first_tx=tx.clone();
             }
@@ -231,30 +232,34 @@ impl<M: Model+Clone> NN<M> {
 */
 
 
-//NON SI PUO FARE RECURSIVE, e dovrei fare visita in ampiezza non profondità :(
-//I LAYER NON SANNO CHI è IL LAYER SUCCESSIVO
-    /*
-    pub fn solve(mut self,input:Vec<u8>){
+
+    pub fn solve_single_thread(mut self,input:Vec<u128>){
 
 
         for _i in input{
-            let mut spike_vec:Vec<Spike>=Vec::new();
+            //matrice 1xn
+            let mut spike_mat=DMatrix::from_vec(1,2,vec![1.,1.]);
             for layer in self.layers.iter(){
-                
-                for lif in layer.neurons.iter(){
 
-                    //calcola valore input pesato con dot product, usa spike vec 
-                    //chiama handle spike  (è difficile senno l'avrei fatto ora )
+                let mat=&layer.input_weights; //matrice nxn
+                let weighted_matrix=&spike_mat*mat; //matrice 1xn colonna 0 neruone0 ecc..
+                    
+                
+                /*for (index,neuron) in layer.neurons.iter_mut().enumerate(){
+                    let weighted_input_val=weighted_matrix[index];
+
+                    //let res=M::handle_spike(neuron, weighted_input_val, ts)
                     //se genera spike aggiungi al vec spike, segna anche se non ha fatto spike
 
                     
                 }
+                */
             }
 
             //alla fine spike vec è vettore che dice quali enuroni del layer hanno fatto spike
 
         }
 
-    }*/
+    }
 
 }

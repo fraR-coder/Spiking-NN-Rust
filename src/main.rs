@@ -2,7 +2,8 @@ pub mod snn;
 
 use crate::snn::model::{lif::*, Model};
 
-use nalgebra::DMatrix;
+use nalgebra::{DMatrix, DVector};
+use ndarray::Array1;
 
 use crate::snn::nn::NN;
 /*
@@ -70,7 +71,21 @@ fn test_solve(nn:NN<LeakyIntegrateFire>, input: Vec<u128>) {
 }
 
 fn main() {
-    let nn = f2().unwrap();
+    //let nn = f2().unwrap();
     let input = vec![1,2,3,4,6,7,8,9,11,15,20,25,26,28,29,30];
-    test_solve(nn,input);
+    //test_solve(nn,input);
+
+
+    let mat1 = DMatrix::from_vec(2, 2, vec![1.0, 0.0, 0.0, 2.0]);
+
+    // Crea il vettore 2x1 mat2
+    let mat2 = DVector::from_vec(vec![1.0, 1.0]);
+
+    // Esegui la moltiplicazione tra mat1 e mat2
+    let result = mat1 * mat2;
+
+    // Stampa il risultato
+    println!("Risultato:\n{}", result);
+
+
 }
