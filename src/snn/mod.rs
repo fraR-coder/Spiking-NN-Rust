@@ -38,9 +38,16 @@ impl Spike {
     */
 
     //recive a matrix where each line is vector of Spikes and merge all the Spikes in a terminal verctor
-    pub fn vec_of_all_spikes(spikes: Vec<Vec<Spike>>) -> Vec<Spike> {
-        let mut res: Vec<Spike> = spikes.into_iter().flatten().collect();
-        res.sort(); //ascending
+    pub fn vec_of_all_spikes(spikes: Vec<(u128,Vec<u128>)>) -> Vec<Spike> {
+        let mut res: Vec<Spike> = spikes.into_iter().flat_map(|(neuron_id, (spikes_vector))| {
+            spikes_vector.into_iter().map(move |ts| Spike {
+                ts,
+                layer_id: 0,
+                neuron_id: neuron_id as usize
+            })
+        }).collect();
+
+        res.sort(); // ascending order by default because of the `Ord` trait
         res
     }
 }

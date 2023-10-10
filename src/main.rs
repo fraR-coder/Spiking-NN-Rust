@@ -3,7 +3,7 @@ pub mod snn;
 use crate::snn::model::{lif::*, Model};
 
 use nalgebra::{DMatrix, DVector};
-use ndarray::Array1;
+//use ndarray::Array1;
 
 use crate::snn::nn::NN;
 /*
@@ -67,11 +67,11 @@ fn f2() -> Result<NN<LeakyIntegrateFire>, String> {
 
 fn test_solve(nn:NN<LeakyIntegrateFire>, input: Vec<u128>) {
     let mut nn_temp = nn.clone();
-    nn_temp.solve(input);
+    nn_temp.solve_single_vec_spike(input);
 }
 
 fn main() {
-    //let nn = f2().unwrap();
+    let nn = f2().unwrap();
     let input = vec![1,2,3,4,6,7,8,9,11,15,20,25,26,28,29,30];
     //test_solve(nn,input);
 

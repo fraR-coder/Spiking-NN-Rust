@@ -35,7 +35,7 @@ impl LifNeuron {
             v_reset,
             v_th,
             tau,
-            v_mem: 0.0, //inizlamente a 0?
+            v_mem: 0.0, //inizialmente a 0?
             ts_old: 0,
         }
     }
@@ -109,9 +109,9 @@ impl Model for LeakyIntegrateFire {
 
         if neuron.v_mem > neuron.v_th {
             neuron.v_mem = neuron.v_reset;
-            1.
+            1.0
         } else {
-            0.
+            0.0
         }
     }
     /*
