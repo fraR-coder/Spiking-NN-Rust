@@ -39,8 +39,24 @@ fn f1() {
     let st = Spike::vec_of_all_spikes(vs);
 
     println!("{:?}", st);
+
+    
 }
 */
+fn matrix_mul(){
+    let mat1 = DMatrix::from_vec(2, 2, vec![1.0, 1.0, 2.0, 3.0]);
+
+    // Crea il vettore 2x1 mat2
+    let mat2 = DVector::from_vec(vec![1.0, 1.0]);
+    println!("{}",mat2);
+
+    // Esegui la moltiplicazione tra mat1 e mat2
+    let result = mat2.transpose()*mat1;
+
+
+    // Stampa il risultato
+    println!("Risultato:\n{}", result);
+}
 fn f2() -> Result<NN<LeakyIntegrateFire>, String> {
     let config1 = Configuration::new(1.0,1.0, 2.5, 1.0);
     let config2 = Configuration::new(2.5, 1.0, 4.0, 5.0);
@@ -71,21 +87,16 @@ fn test_solve(nn:NN<LeakyIntegrateFire>, input: Vec<u128>) {
 }
 
 fn main() {
-    //let nn = f2().unwrap();
-    let input = vec![1,2,3,4,6,7,8,9,11,15,20,25,26,28,29,30];
+    let nn = f2().unwrap();
+    let input = vec![0,1,2];
+
+   
+    nn.solve_single_thread(input);
+
     //test_solve(nn,input);
 
 
-    let mat1 = DMatrix::from_vec(2, 2, vec![1.0, 0.0, 0.0, 2.0]);
-
-    // Crea il vettore 2x1 mat2
-    let mat2 = DVector::from_vec(vec![1.0, 1.0]);
-
-    // Esegui la moltiplicazione tra mat1 e mat2
-    let result = mat1 * mat2;
-
-    // Stampa il risultato
-    println!("Risultato:\n{}", result);
+    
 
 
 }

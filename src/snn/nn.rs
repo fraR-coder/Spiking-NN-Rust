@@ -1,7 +1,7 @@
 
 use crate::Model;
 use crate::snn::layer::Layer;
-use nalgebra::DMatrix;
+use nalgebra::{DMatrix, DVector};
 use ndarray::ArrayBase;
 use std::sync::{mpsc};
 use std::thread;
@@ -239,22 +239,21 @@ impl<M: Model+Clone> NN<M> {
 
         for _i in input{
             //matrice 1xn
-            let mut spike_mat=DMatrix::from_vec(1,2,vec![1.,1.]);
-            for layer in self.layers.iter(){
+            let mut spike_mat=DVector::from_vec(vec![1.0, 1.0]).transpose();
+            for (layer_i,layer) in self.layers.iter_mut().enumerate(){
 
-                let mat=&layer.input_weights; //matrice nxn
+                let mat=&layer.input_weights; //matrice nxn colonna0
                 let weighted_matrix=&spike_mat*mat; //matrice 1xn colonna 0 neruone0 ecc..
                     
                 
-                /*for (index,neuron) in layer.neurons.iter_mut().enumerate(){
+                for (index,neuron) in  layer.neurons.iter_mut().enumerate(){
                     let weighted_input_val=weighted_matrix[index];
+                    println!("layer: {} neuron:{}  val:{}",layer_i,index,weighted_input_val);
 
                     //let res=M::handle_spike(neuron, weighted_input_val, ts)
                     //se genera spike aggiungi al vec spike, segna anche se non ha fatto spike
-
-                    
                 }
-                */
+                
             }
 
             //alla fine spike vec è vettore che dice quali enuroni del layer hanno fatto spike
