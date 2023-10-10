@@ -91,7 +91,7 @@ fn main() {
     let input = vec![0,1,2];
 
 
-    nn.solve_single_thread(input);
+    //nn.solve_single_thread(input);
 
     //test_solve(nn,input);
 
