@@ -1,4 +1,6 @@
 use std::fmt;
+
+use crate::Model;
 pub mod layer;
 pub mod model;
 pub mod nn;
