@@ -1,6 +1,10 @@
 //! Implementation of the Leaky Integrate and Fire (LIF) model for Spiking Neural Networks
+use std::ops::DerefMut;
+use std::vec;
+use nalgebra::{DMatrix, DVector};
+use crate::snn::layer::Layer;
 use crate::snn::model::Model;
-
+use crate::snn::Spike;
 #[derive(Clone, Debug)]
 pub struct LifNeuron {
     /// Rest potential
@@ -114,24 +118,5 @@ impl Model for LeakyIntegrateFire {
             0.0
         }
     }
-    /*
-    fn handle_spike(&mut self, weighted_input_val: f64, ts: u128) -> f64 {
-        // Calcolo del delta_t tra l'istante corrente e l'istante precedente
-        let delta_t: f64 = (ts - self.ts_old) as f64;
-        self.ts_old = ts;
 
-        // Calcolo del nuovo potenziale di membrana (V_m) basato sulla dinamica del LIF
-        self.v_mem = self.v_rest + (self.v_mem - self.v_rest) * (-delta_t / self.tau).exp() + weighted_input_val;
-
-        // Verifica se il neurone supera la soglia di attivazione (V_th)
-        if self.v_mem > self.v_th {
-            // Se supera la soglia, reimposta il potenziale di membrana e restituisci 1.0 per indicare uno spike
-            self.v_mem = self.v_reset;
-            1.0
-        } else {
-            // Altrimenti, restituisci 0.0 per indicare nessuno spike
-            0.0
-        }
-    }
-    */
 }

@@ -44,10 +44,13 @@ fn f1() {
 }
 */
 fn matrix_mul(){
-    let mat1 = DMatrix::from_vec(2, 2, vec![1.0, 1.0, 2.0, 3.0]);
-
+    let mat1 = DMatrix::from_vec(3, 3, vec![
+        1.0, 2.0, 0.0,
+        0.0,1.0,0.0,
+        0.0,0.0,1.0]);
+    println!("Matrix: {}",mat1);
     // Crea il vettore 2x1 mat2
-    let mat2 = DVector::from_vec(vec![1.0, 1.0]);
+    let mat2 = DVector::from_vec(vec![1.0, 1.0,1.0]);
     println!("{}",mat2);
 
     // Esegui la moltiplicazione tra mat1 e mat2
@@ -89,7 +92,7 @@ fn test_solve(nn:NN<LeakyIntegrateFire>, input: Vec<u128>) {
 fn main() {
     let nn = f2().unwrap();
     let input = vec![0,1,2];
-
+    matrix_mul();
 
     //nn.solve_single_thread(input);
 
