@@ -56,16 +56,5 @@ impl<M: Model + Clone+'static> Layer<M> {
     pub fn iter_neurons(&self) -> <&Vec<M::Neuron> as IntoIterator>::IntoIter {
         self.neurons.iter()
     }
-    pub fn update_layer(layer:& mut Layer<Self::Neuron>, vec_spike: & Vec<Spike>) {
-        let s=layer.neurons.clone();
-        let vec:Vec<u128> = vec_spike.iter().map(|s| s.neuron_id).collect();
-        let dvec= DVector::from_vec(vec);
-        let res=dvec.transpose()*&layer.intra_weights;
-        for (neuron_idx, weight) in res.iter().enumerate(){
-            if neuron_idx>layer.num_neurons(){
-                let i = layer.get_neuron_mut(neuron_idx).unwrap();
-
-            }
-        }
-    }
+    
 }

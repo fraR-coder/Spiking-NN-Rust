@@ -247,7 +247,7 @@ impl<M: Model+Clone> NN<M> {
                     if let Some(next_tx) = &next_tx {
                         if !layer_output.is_empty(){
                             next_tx.send(layer_output.clone()).expect("Error sending the vector of spikes");
-                            layers[layer_idx].update_layer(& mut layers[layer_idx],&layer_output);
+                            //layers[layer_idx].update_layer(& mut layers[layer_idx],&layer_output);
                         }
                     } else {
                         for s in layer_output.iter(){
@@ -366,32 +366,49 @@ impl<M: Model+Clone> NN<M> {
 
 
 
-    pub fn solve_single_thread(mut self,input:Vec<u128>){
+    pub fn solve_single_thread(mut self,input:Vec<u128>)->Vec<(u128, Vec<f64>)>{
 
+        let n_neurons_0=self.layers[0].num_neurons();
+        let mut result_vec:Vec<(u128,Vec<f64>)>=Vec::new();
 
         for ts_i in input{
+            let mut ts=ts_i;
             //matrice 1xn
-            let mut spike_mat=DVector::from_vec(vec![1.0, 1.0]).transpose();
+            let mut spike_mat=DVector::from_element(n_neurons_0,1.0).transpose();
             for (layer_i,layer) in self.layers.iter_mut().enumerate(){
 
                 let mat=&layer.input_weights; //matrice nxn colonna0
                 let weighted_matrix=&spike_mat*mat; //matrice 1xn colonna 0 neruone0 ecc..
                     
-                
+                ts+=1;
+                let mut v_spike=Vec::new();
                 for (index,neuron) in  layer.neurons.iter_mut().enumerate(){
                     let weighted_input_val=weighted_matrix[index];
-                    println!("layer: {} neuron:{}  val:{}",layer_i,index,weighted_input_val);
+                    //println!("layer: {} neuron:{} ts:{} val:{}",layer_i,index,ts,weighted_input_val);
+                    
+                    let res=M::handle_spike(neuron, weighted_input_val, ts);
+                    if res==1.{
+                        //genera spike
+                        v_spike.push(1.0);
+                    }
+                    else {
+                        v_spike.push(0.0);
+                    }
 
-                    //let res=M::handle_spike(neuron, weighted_input_val, ts)
                     //se genera spike aggiungi al vec spike, segna anche se non ha fatto spike
                 }
+                spike_mat=DVector::from_vec(v_spike).transpose();
 
             }
 
             //alla fine spike vec è vettore che dice quali enuroni del layer hanno fatto spike
+            //println!("output from last layer at ts:{}  is {:?}  ",ts,spike_mat.as_slice());
+            result_vec.push((ts,spike_mat.as_slice().iter().cloned().collect()));
+            
 
         }
-
+        //println!("{:?}",result_vec);
+        result_vec
     }
 
 }
