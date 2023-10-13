@@ -365,11 +365,11 @@ impl<M: Model+Clone> NN<M> {
 */
 
 
-/*
+
     pub fn solve_single_thread(mut self,input:Vec<u128>){
 
 
-        for _i in input{
+        for ts_i in input{
             //matrice 1xn
             let mut spike_mat=DVector::from_vec(vec![1.0, 1.0]).transpose();
             for (layer_i,layer) in self.layers.iter_mut().enumerate(){
@@ -393,5 +393,5 @@ impl<M: Model+Clone> NN<M> {
         }
 
     }
-*/
+
 }

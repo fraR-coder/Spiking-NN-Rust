@@ -92,9 +92,9 @@ fn test_solve(nn:NN<LeakyIntegrateFire>, input: Vec<u128>) {
 fn main() {
     let nn = f2().unwrap();
     let input = vec![0,1,2];
-    matrix_mul();
+    //matrix_mul();
 
-    //nn.solve_single_thread(input);
+    nn.solve_single_thread(input);
 
     //test_solve(nn,input);
 
