@@ -117,3 +117,36 @@ fn test_single_thread() {
 
     return;
 }
+
+fn test_single_thread_complete() {
+    let config = Configuration::new(2.0, 0.5, 2.1, 1.0);
+
+    let nn = NN::<LeakyIntegrateFire>::new()
+        .layer(
+            vec![
+                LifNeuron::from_conf(&config),
+                LifNeuron::from_conf(&config),
+            ],
+            DMatrix::from_vec(2, 2, vec![1.0, 0.0, 0.0, 2.0]),
+            DMatrix::from_vec(2, 2, vec![1.0, 0.0, 0.0, 2.0]))
+        .unwrap()
+        .layer(
+            vec![LifNeuron::from_conf(&config), LifNeuron::from_conf(&config)],
+            DMatrix::from_vec(3, 2, vec![0.0, 1.0, 0.5, 0.5, 0.0, 1.0]),
+            DMatrix::from_vec(2, 2, vec![0.0, 0.0, 0.0, 0.0]),
+        );
+
+    let input = vec![0, 2, 5];
+
+    //let res = nn.expect("error in nn").solve_single_thread(input);
+
+    assert_eq!(
+        nn.expect("error ").solve_single_thread(input), 
+        vec![(2, vec![1.,1.]),
+        (4, vec![1.,1.]),
+        (7, vec![1.,1.])
+        ]
+    );
+
+    return;
+}
