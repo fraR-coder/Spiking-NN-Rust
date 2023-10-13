@@ -56,5 +56,25 @@ impl<M: Model + Clone+'static> Layer<M> {
     pub fn iter_neurons(&self) -> <&Vec<M::Neuron> as IntoIterator>::IntoIter {
         self.neurons.iter()
     }
+
+    pub fn update_layer(&mut self, layer:& mut Layer<M>, vec_spike: & Vec<Spike>) {
+        let mut spike_mat=vec![0.0;layer.num_neurons()];
+        //creo il vettore che conterrà 1 in corrispondenza di neuorne che spara e 0 altrimenti
+        for spike in vec_spike.iter(){
+            let neuron_id=spike.neuron_id;
+            spike_mat[neuron_id]=1.0;
+        }
+        
+        let dvec= DVector::from_vec(spike_mat);
+        let res=dvec.transpose()*&layer.intra_weights;
+        
+        let neurons=&mut layer.neurons;
+
+       //why cannot access to fields in Neuron
+       
+
+    }
     
+
+   
 }
