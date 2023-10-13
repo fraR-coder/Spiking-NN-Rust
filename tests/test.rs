@@ -94,7 +94,7 @@ fn test_single_thread() {
                 LifNeuron::from_conf(&config),
             ],
             DMatrix::from_vec(3, 3, vec![1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0]),
-            DMatrix::from_vec(3, 3, vec![0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
+            DMatrix::from_vec(3, 3, vec![0.0, -1.0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
         )
         .unwrap()
         .layer(

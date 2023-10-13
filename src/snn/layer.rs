@@ -1,5 +1,6 @@
 extern crate nalgebra as na;
 
+use std::ops::{Deref, DerefMut};
 use crate::Model;
 use na::{DMatrix};
 use nalgebra::DVector;
@@ -56,25 +57,26 @@ impl<M: Model + Clone+'static> Layer<M> {
     pub fn iter_neurons(&self) -> <&Vec<M::Neuron> as IntoIterator>::IntoIter {
         self.neurons.iter()
     }
-
-    pub fn update_layer(&mut self, layer:& mut Layer<M>, vec_spike: & Vec<Spike>) {
-        let mut spike_mat=vec![0.0;layer.num_neurons()];
-        //creo il vettore che conterrà 1 in corrispondenza di neuorne che spara e 0 altrimenti
-        for spike in vec_spike.iter(){
-            let neuron_id=spike.neuron_id;
-            spike_mat[neuron_id]=1.0;
+    pub fn update_layer(&mut self, vec_spike: & Vec<Spike>) {
+        let mut vec:Vec<u128> = vec_spike.iter().map(|s| s.neuron_id as u128).collect();
+        let mut vec2:Vec<f64> = vec![];
+        let mut i:u128 = 0;
+        while i<self.num_neurons() as u128{
+            for _ in i .. if vec.len()>0 {vec.remove(0)} else { self.num_neurons() as u128 }{
+                vec2.push(0.0);
+                i+=1;
+            }
+            if vec2.len()<self.num_neurons(){
+                vec2.push(1.0);
+            }
+            i+=1;
         }
-        
-        let dvec= DVector::from_vec(spike_mat);
-        let res=dvec.transpose()*&layer.intra_weights;
-        
-        let neurons=&mut layer.neurons;
-
-       //why cannot access to fields in Neuron
-       
-
+        let d_vec= DVector::from_vec(vec2);
+        let res=d_vec.transpose() * &self.intra_weights;
+        for (neuron_idx, weight) in res.iter().enumerate(){
+            if neuron_idx<self.num_neurons(){
+                M::update_v_mem(self.get_neuron_mut(neuron_idx).unwrap(),*weight);
+            }
+        }
     }
-    
-
-   
 }

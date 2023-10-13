@@ -122,6 +122,9 @@ impl Model for LeakyIntegrateFire {
             0.0
         }
     }
+    fn update_v_mem(neuron: &mut LifNeuron, val:f64){
+        neuron.v_mem+=val;
+    }
 
      
 

@@ -44,7 +44,7 @@ impl<M: Model+Clone> NN<M> {
         if input_weights.len() != (
             if len_last_layer == 0 { n*n } else { len_last_layer * n }
         ) {
-            return Err("Incompatible intra weight matrix".to_string());
+            return Err("Incompatible input weight matrix".to_string());
         }
 
         // Finally, insert layer into nn
@@ -246,8 +246,9 @@ impl<M: Model+Clone> NN<M> {
                     // Invio dei nuovi spike al layer successivo (se presente)
                     if let Some(next_tx) = &next_tx {
                         if !layer_output.is_empty(){
+                            println!("vec: {:?}",layer_output.clone());
                             next_tx.send(layer_output.clone()).expect("Error sending the vector of spikes");
-                            //layers[layer_idx].update_layer(& mut layers[layer_idx],&layer_output);
+                            layers[layer_idx].update_layer(&layer_output);
                         }
                     } else {
                         for s in layer_output.iter(){
@@ -381,6 +382,8 @@ impl<M: Model+Clone> NN<M> {
                 let weighted_matrix=&spike_mat*mat; //matrice 1xn colonna 0 neruone0 ecc..
                     
                 ts+=1;
+                let mut real_spike_vec=Vec::new();
+
                 let mut v_spike=Vec::new();
                 for (index,neuron) in  layer.neurons.iter_mut().enumerate(){
                     let weighted_input_val=weighted_matrix[index];
@@ -390,6 +393,9 @@ impl<M: Model+Clone> NN<M> {
                     if res==1.{
                         //genera spike
                         v_spike.push(1.0);
+                        real_spike_vec.push(Spike::new(ts,layer_i,index));
+                       
+
                     }
                     else {
                         v_spike.push(0.0);
@@ -398,6 +404,8 @@ impl<M: Model+Clone> NN<M> {
                     //se genera spike aggiungi al vec spike, segna anche se non ha fatto spike
                 }
                 spike_mat=DVector::from_vec(v_spike).transpose();
+                layer.update_layer(&real_spike_vec);
+                
 
             }
 
