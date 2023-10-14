@@ -79,4 +79,27 @@ impl<M: Model + Clone+'static> Layer<M> {
             }
         }
     }
+
+
+    pub fn update_layer_ciclo(&mut self, vec_spike: & Vec<Spike>) {
+        let mut vec:Vec<u128> = vec_spike.iter().map(|s| s.neuron_id as u128).collect();
+        let mut vec2:Vec<f64> = vec![];
+        let mut i:u128 = 0;
+       
+       
+
+            for neuron_idx in 0.. self.num_neurons(){
+
+                let mut sum=0.;
+                for spike in vec_spike.iter(){
+                    
+                    sum += 1.0*self.intra_weights[(spike.neuron_id, neuron_idx as usize)]; // da reimplementare in una funzione a parte con gli stuck
+
+
+                }
+                M::update_v_mem(self.get_neuron_mut(neuron_idx).unwrap(),sum);
+
+            }
+        }
+
 }
