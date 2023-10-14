@@ -44,7 +44,7 @@ impl<M: Model+Clone> NN<M> {
         if input_weights.len() != (
             if len_last_layer == 0 { n*n } else { len_last_layer * n }
         ) {
-            return Err("Incompatible intra weight matrix".to_string());
+            return Err("Incompatible input weight matrix".to_string());
         }
 
         // Finally, insert layer into nn
@@ -246,8 +246,9 @@ impl<M: Model+Clone> NN<M> {
                     // Invio dei nuovi spike al layer successivo (se presente)
                     if let Some(next_tx) = &next_tx {
                         if !layer_output.is_empty(){
+                            println!("vec: {:?}",layer_output.clone());
                             next_tx.send(layer_output.clone()).expect("Error sending the vector of spikes");
-                            layers[layer_idx].update_layer(& mut layers[layer_idx],&layer_output);
+                            layers[layer_idx].update_layer(&layer_output);
                         }
                     } else {
                         for s in layer_output.iter(){

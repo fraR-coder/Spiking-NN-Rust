@@ -1,5 +1,6 @@
 extern crate nalgebra as na;
 
+use std::ops::{Deref, DerefMut};
 use crate::Model;
 use na::{DMatrix};
 use nalgebra::DVector;
@@ -56,15 +57,25 @@ impl<M: Model + Clone+'static> Layer<M> {
     pub fn iter_neurons(&self) -> <&Vec<M::Neuron> as IntoIterator>::IntoIter {
         self.neurons.iter()
     }
-    pub fn update_layer(layer:& mut Layer<Self::Neuron>, vec_spike: & Vec<Spike>) {
-        let s=layer.neurons.clone();
-        let vec:Vec<u128> = vec_spike.iter().map(|s| s.neuron_id).collect();
-        let dvec= DVector::from_vec(vec);
-        let res=dvec.transpose()*&layer.intra_weights;
+    pub fn update_layer(&mut self, vec_spike: & Vec<Spike>) {
+        let mut vec:Vec<u128> = vec_spike.iter().map(|s| s.neuron_id as u128).collect();
+        let mut vec2:Vec<f64> = vec![];
+        let mut i:u128 = 0;
+        while i<self.num_neurons() as u128{
+            for _ in i .. if vec.len()>0 {vec.remove(0)} else { self.num_neurons() as u128 }{
+                vec2.push(0.0);
+                i+=1;
+            }
+            if vec2.len()<self.num_neurons(){
+                vec2.push(1.0);
+            }
+            i+=1;
+        }
+        let d_vec= DVector::from_vec(vec2);
+        let res=d_vec.transpose() * &self.intra_weights;
         for (neuron_idx, weight) in res.iter().enumerate(){
-            if neuron_idx>layer.num_neurons(){
-                let i = layer.get_neuron_mut(neuron_idx).unwrap();
-
+            if neuron_idx<self.num_neurons(){
+                M::update_v_mem(self.get_neuron_mut(neuron_idx).unwrap(),*weight);
             }
         }
     }
