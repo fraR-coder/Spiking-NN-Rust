@@ -2,7 +2,6 @@
 use crate::Model;
 use crate::snn::layer::Layer;
 use nalgebra::{DMatrix, DVector};
-use ndarray::ArrayBase;
 use std::sync::{mpsc};
 use std::thread;
 
@@ -246,13 +245,13 @@ impl<M: Model+Clone> NN<M> {
                     // Invio dei nuovi spike al layer successivo (se presente)
                     if let Some(next_tx) = &next_tx {
                         if !layer_output.is_empty(){
-                            println!("vec: {:?}",layer_output.clone());
+                            println!("vec in output: {:?} sent from thread:{}",layer_output.clone(),thread_name);
                             next_tx.send(layer_output.clone()).expect("Error sending the vector of spikes");
-                            layers[layer_idx].update_layer(&layer_output);
+                            layers[layer_idx].update_layer_ciclo(&layer_output);
                         }
                     } else {
                         for s in layer_output.iter(){
-                            println!("Output: {} (thread: {})",s.clone(),thread_name);
+                            println!("final Output: {} (thread: {})",s.clone(),thread_name);
                         }
                     }
                     layer_output=vec![];
@@ -275,7 +274,7 @@ impl<M: Model+Clone> NN<M> {
             };
             ts=spike.ts as usize;
             let mut vec_of_spikes = vec![];
-            //println!("vec spikes: {:?}",input_spikes);
+           // println!("input spikes to starting: {:?}",input_spikes);
             for _ in 0 .. self.layers[0].num_neurons(){
                 let s = match input_spikes.get(index_input){
                     Some(value) => value.clone(),
@@ -290,7 +289,7 @@ impl<M: Model+Clone> NN<M> {
                 }
             }
             first_tx.send(vec_of_spikes.clone()).expect("Error sending the vector of spikes");
-            //println!("Sent vec: {:?}",vec_of_spikes);
+            println!("Sent vec: {:?} to T0",vec_of_spikes);
             ts+=1;
         }
 
@@ -372,20 +371,16 @@ impl<M: Model+Clone> NN<M> {
         let n_neurons_0=self.layers[0].num_neurons();
         let mut result_vec:Vec<(u128,Vec<f64>)>=Vec::new();
 
-        for ts_i in input{
-            let mut ts=ts_i;
+        for _ts_i in input{
             //matrice 1xn
-            let mut spike_mat=DVector::from_element(n_neurons_0,1.0).transpose();
+            let  spike_mat=DVector::from_vec(vec![1.0, 1.0]).transpose();
             for (layer_i,layer) in self.layers.iter_mut().enumerate(){
 
                 let mat=&layer.input_weights; //matrice nxn colonna0
                 let weighted_matrix=&spike_mat*mat; //matrice 1xn colonna 0 neruone0 ecc..
                     
-                ts+=1;
-                let mut real_spike_vec=Vec::new();
-
-                let mut v_spike=Vec::new();
-                for (index,neuron) in  layer.neurons.iter_mut().enumerate(){
+                
+                for (index,_neuron) in  layer.neurons.iter_mut().enumerate(){
                     let weighted_input_val=weighted_matrix[index];
                     //println!("layer: {} neuron:{} ts:{} val:{}",layer_i,index,ts,weighted_input_val);
                     

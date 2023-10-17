@@ -1,6 +1,5 @@
 extern crate nalgebra as na;
 
-use std::ops::{Deref, DerefMut};
 use crate::Model;
 use na::{DMatrix};
 use nalgebra::DVector;
@@ -79,4 +78,19 @@ impl<M: Model + Clone+'static> Layer<M> {
             }
         }
     }
+
+
+    pub fn update_layer_ciclo(&mut self, vec_spike: & Vec<Spike>) {
+           
+            for neuron_idx in 0.. self.num_neurons(){
+
+                let mut sum=0.;
+                for spike in vec_spike.iter(){
+                    sum += 1.0*self.intra_weights[(spike.neuron_id, neuron_idx as usize)]; // da reimplementare in una funzione a parte con gli stuck
+                }
+                M::update_v_mem(self.get_neuron_mut(neuron_idx).unwrap(),sum);
+
+            }
+        }
+
 }

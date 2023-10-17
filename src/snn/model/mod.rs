@@ -1,7 +1,6 @@
 //! Main `Model` trait for expanding this library to work with other models. Leaky integrate and fire is built in.
 
-use crate::snn::layer::Layer;
-use crate::snn::Spike;
+
 
 use self::lif::LifNeuron;
 
