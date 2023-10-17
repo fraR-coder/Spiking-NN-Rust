@@ -1,10 +1,9 @@
 //! Implementation of the Leaky Integrate and Fire (LIF) model for Spiking Neural Networks
-use std::ops::DerefMut;
-use std::vec;
-use nalgebra::{DMatrix, DVector};
-use crate::snn::layer::Layer;
+
+
+
 use crate::snn::model::Model;
-use crate::snn::Spike;
+
 #[derive(Clone, Debug)]
 pub struct LifNeuron {
     /// Rest potential

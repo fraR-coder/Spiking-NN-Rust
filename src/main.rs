@@ -3,7 +3,6 @@ pub mod snn;
 use crate::snn::model::{lif::*, Model};
 
 use nalgebra::{DMatrix, DVector};
-use ndarray::Array1;
 
 use crate::snn::nn::NN;
 /*
