@@ -2,7 +2,10 @@
 
 
 
+use self::lif::LifNeuron;
+
 pub mod lif;
+
 pub trait Model {
 
     type Neuron: 'static + Sized + Clone + Send + Sync ;

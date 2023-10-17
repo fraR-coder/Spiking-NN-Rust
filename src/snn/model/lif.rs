@@ -47,6 +47,10 @@ impl LifNeuron {
         Self::new(nc.v_rest, nc.v_reset, nc.v_threshold, nc.tau)
     }
 
+    pub fn update_vmem(&mut self,val:f64){
+        self.v_mem+=val;
+    }
+
     /// Create a new array of n [LifNeuron] structs, starting from a given Configuration.
 
     pub fn new_vec(conf: Configuration, n: usize) -> Vec<LifNeuron> {
@@ -120,5 +124,7 @@ impl Model for LeakyIntegrateFire {
     fn update_v_mem(neuron: &mut LifNeuron, val:f64){
         neuron.v_mem+=val;
     }
+
+     
 
 }

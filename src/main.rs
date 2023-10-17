@@ -60,8 +60,8 @@ fn matrix_mul(){
     println!("Risultato:\n{}", result);
 }
 fn f2() -> Result<NN<LeakyIntegrateFire>, String> {
-    let config1 = Configuration::new(1.0,1.0, 2.5, 1.0);
-    let config2 = Configuration::new(2.5, 1.0, 4.0, 5.0);
+    let config1 = Configuration::new(2.0, 0.5, 2.0, 1.0);
+    let config2 = Configuration::new(2.5, 1.0, 4.0, 1.0);
 
     let neuron1 = LifNeuron::from_conf(&config1);
     let neuron2 = LifNeuron::from_conf(&config2);
@@ -90,7 +90,7 @@ fn test_solve(nn:NN<LeakyIntegrateFire>, input: Vec<u128>) {
 
 fn main() {
     let nn = f2().unwrap();
-    let input = vec![0,1,2];
+    let input = vec![0,2,5];
     //matrix_mul();
 
     nn.solve_single_thread(input);
