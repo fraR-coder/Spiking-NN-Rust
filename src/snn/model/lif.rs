@@ -105,7 +105,7 @@ impl Model for LeakyIntegrateFire {
         if weighted_input_val == 0.0 {
             return 0.0;
         }
-
+        //println!("ts: {}, ts_old: {}",ts, neuron.ts_old);
         let delta_t: f64 = (ts - neuron.ts_old) as f64;
         neuron.ts_old = ts;
 
@@ -122,7 +122,11 @@ impl Model for LeakyIntegrateFire {
         }
     }
     fn update_v_mem(neuron: &mut LifNeuron, val:f64){
-        neuron.v_mem+=val;
+        if neuron.v_mem+val >= 0.0 {
+            neuron.v_mem+=val;
+        } else {
+            neuron.v_mem=0.0;
+        }
     }
 
      
