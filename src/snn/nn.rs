@@ -407,9 +407,13 @@ pub fn solve_single_thread(mut self,input:Vec<u128>)->Vec<(u128, Vec<f64>)>{
             let mut v_spike=Vec::new();
             for (index,neuron) in  layer.neurons.iter_mut().enumerate(){
                 let weighted_input_val=weighted_matrix[index];
-                //println!("layer: {} neuron:{} ts:{} val:{}",layer_i,index,ts,weighted_input_val);
+                println!("layer: {} neuron:{} ts:{} val:{}",layer_i,index,ts,weighted_input_val);
                 
-                let res=M::handle_spike(neuron, weighted_input_val, ts);
+                let res=M::handle_spike(neuron, weighted_input_val, ts-1);
+                if(index==3){
+                    println!("{:?}",neuron);
+                    }
+
                 if res==1.{
                     //genera spike
                     v_spike.push(1.0);
