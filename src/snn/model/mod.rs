@@ -2,9 +2,9 @@
 
 use std::fmt::Debug;
 
-use self::lif::LifNeuron;
 
 pub mod lif;
+pub mod logic_circuit;
 
 pub trait Model {
 
@@ -15,3 +15,5 @@ pub trait Model {
     fn handle_spike(neuron: &mut Self::Neuron, weighted_input_val: f64, ts: u128) -> f64;
     fn update_v_mem(neuron: &mut Self::Neuron, val: f64);
 }
+
+
