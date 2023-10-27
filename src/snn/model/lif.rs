@@ -3,6 +3,8 @@
 
 
 use crate::snn::model::Model;
+use std::f64;
+use rand::Rng;
 
 #[derive(Clone, Debug)]
 pub struct LifNeuron {
@@ -121,7 +123,7 @@ impl Model for LeakyIntegrateFire {
             0.0
         }
     }
-    fn update_v_mem(neuron: &mut LifNeuron, val:f64){
+    fn update_v_mem(neuron: &mut LifNeuron, val: f64){
         if neuron.v_mem+val >= 0.0 {
             neuron.v_mem+=val;
         } else {
@@ -129,6 +131,50 @@ impl Model for LeakyIntegrateFire {
         }
     }
 
-     
+    fn update_v_rest(neuron: &mut Self::Neuron, stuck:bool) {
+        let mut bits: u64 = neuron.v_rest.to_bits();
+        println!("vecchi bit: {}",bits);
+        let random_bit_index = rand::thread_rng().gen_range(0..64);
+        if stuck { // if stuck_at_bit_1
+            bits |= 1u64 << random_bit_index;
+        } else {
+            bits &= !(1u64 << random_bit_index);
+        }
+        println!("update_v_rest: {}",random_bit_index);
+        println!("nuovi bit: {}",bits);
+        neuron.v_rest=f64::from_bits(bits);
+    }
 
+    fn update_v_reset(neuron: &mut Self::Neuron, stuck:bool) {
+        let mut bits: u64 = neuron.v_reset.to_bits();
+        let random_bit_index = rand::thread_rng().gen_range(0..64);
+        if stuck { // if stuck_at_bit_1
+            bits |= 1u64 << random_bit_index;
+        } else {
+            bits &= !(1u64 << random_bit_index);
+        }
+        neuron.v_reset=f64::from_bits(bits);
+    }
+
+    fn update_v_th(neuron: &mut Self::Neuron, stuck:bool) {
+        let mut bits: u64 = neuron.v_th.to_bits();
+        let random_bit_index = rand::thread_rng().gen_range(0..64);
+        if stuck { // if stuck_at_bit_1
+            bits |= 1u64 << random_bit_index;
+        } else {
+            bits &= !(1u64 << random_bit_index);
+        }
+        neuron.v_th=f64::from_bits(bits);
+    }
+
+    fn update_tau(neuron: &mut Self::Neuron, stuck:bool) {
+        let mut bits: u64 = neuron.tau.to_bits();
+        let random_bit_index = rand::thread_rng().gen_range(0..64);
+        if stuck { // if stuck_at_bit_1
+            bits |= 1u64 << random_bit_index;
+        } else {
+            bits &= !(1u64 << random_bit_index);
+        }
+        neuron.tau=f64::from_bits(bits);
+    }
 }

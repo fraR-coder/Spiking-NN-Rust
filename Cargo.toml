@@ -10,3 +10,4 @@ edition = "2021"
 
 nalgebra = "0.32.3"
 ndarray = "0.15.6"
+rand = "0.8"

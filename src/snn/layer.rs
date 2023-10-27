@@ -86,5 +86,28 @@ impl<M: Model + Clone+'static> Layer<M> {
 
             }
         }
+    pub fn stuck_bit_neuron(&mut self, stuck: bool, neuron_id: usize, neuron_data: String ) {
+        let neuron= self.get_neuron_mut(neuron_id).unwrap();
+
+        match neuron_data.as_str() {
+            "v_th" => {
+                M::update_v_th(neuron, stuck);
+            }
+            "v_rest" => {
+                println!("Entrato in v_rest del layer: ");
+                M::update_v_rest(neuron, stuck);
+            }
+            "v_reset" => {
+                M::update_v_reset(neuron, stuck);
+            }
+            "v_tau" => {
+                M::update_tau(neuron, stuck);
+            }
+            _ => {
+                println!("Error: invalid parameter");
+            }
+        }
+
+    }
 
 }

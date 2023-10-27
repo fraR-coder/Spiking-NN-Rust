@@ -1,7 +1,7 @@
 pub mod snn;
 
 use crate::snn::model::{lif::*, Model};
-
+use crate::snn::resilience::Resilience;
 use nalgebra::{DMatrix, DVector};
 
 use crate::snn::nn::NN;
@@ -54,10 +54,14 @@ fn matrix_mul(){
 
     // Esegui la moltiplicazione tra mat1 e mat2
     let result = mat2.transpose()*mat1;
-
+    
 
     // Stampa il risultato
     println!("Risultato:\n{}", result);
+}
+
+fn get_random_component(resilience: Resilience) -> String{
+    resilience.get_rand_component()
 }
 fn f2() -> Result<NN<LeakyIntegrateFire>, String> {
     let config1 = Configuration::new(2.0, 0.5, 2.0, 1.0);
@@ -93,12 +97,10 @@ fn main() {
     let input = vec![0,2,5];
     //matrix_mul();
 
-    nn.solve_single_thread(input);
-
+    //nn.solve_single_thread(input);
+    let configuration: Resilience = Resilience::new(vec!["Neurons".to_string(), "Input Links".to_string()], 0, 5);
+    println!("Il componente scelto è: {}", configuration.get_rand_component());
     //test_solve(nn,input);
 
-
-
-
-
 }
+

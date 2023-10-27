@@ -3,6 +3,7 @@ use std::fmt;
 pub mod layer;
 pub mod model;
 pub mod nn;
+pub mod resilience;
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Debug, Clone)]
 pub struct Spike {
