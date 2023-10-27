@@ -1,6 +1,7 @@
+use std::sync::{Arc, Mutex};
 use rand::Rng;
 use crate::NN;
-use crate::snn::model::{lif::*, Model};
+use crate::snn::model::{lif::*};
 
 /// The struct that contains the input configuration
 #[derive(Clone)]
@@ -25,36 +26,55 @@ impl Resilience<> {
     }
 
     pub fn get_rand_component(&self) -> String{
-        return self.components[rand::thread_rng().gen_range(0..self.components.len() as usize)].clone();
+        return self.components[rand::thread_rng().gen_range(0..self.components.len())].clone();
     }
 
     pub fn execute_resilience_test(&self, mut snn: NN<LeakyIntegrateFire>, input: Vec<(u128, Vec<u128>)>) {
-        let mut snn2 = snn.clone();
-        snn.solve_multiple_vec_spike(input.clone(), 11);
-        let mut stuck:bool=true;
+        let mut stuck:bool = true;
+        let mut count_right_outputs :u64 = 0;
+        let right_output = snn.clone().solve_multiple_vec_spike(input.clone(), 11);
+        println!("{:?}", right_output);
+
         match self.stuck_type {
             0 => {stuck=false}
             1 => {stuck=true}
             _ => {println!("Error: wrong stuck type")}
         }
-        //println!(solution);
-        println!("Type: {}",&self.get_rand_component().to_lowercase() as &str);
-        let component = self.get_rand_component().to_lowercase();
+        for _ in 0..self.times{
+            let mut snn_tmp = snn.clone();
+            //println!(solution);
+            //println!("Type: {}",&self.get_rand_component().to_lowercase() as &str);
+            let component = self.get_rand_component().to_lowercase();
 
-        match &component as &str {
-            ("neurons" | "n" | "neu" | "neuron") => {
-                   let rand_layer_idx = rand::thread_rng().gen_range(0..snn2.get_num_layers());
-                   let rand_neuron_idx = rand::thread_rng().gen_range(0..snn2.layers[rand_layer_idx].num_neurons());
-                   let neuron = snn2
-                       .layers[rand_layer_idx]
-                       .get_neuron_mut(rand_neuron_idx).unwrap();
-
-                   snn2.layers[3].stuck_bit_neuron(true, 3,"v_rest".to_string()  );
-               }
-            _ => {
-                println!("Error unknown component");
+            match &component as &str {
+                ("neurons" | "n" | "neu" | "neuron") => {
+                    let rand_layer_idx = rand::thread_rng().gen_range(0..snn_tmp.get_num_layers());
+                    let rand_neuron_idx = rand::thread_rng().gen_range(0..snn_tmp.layers[rand_layer_idx].num_neurons());
+                    snn_tmp.layers[rand_layer_idx].stuck_bit_neuron(stuck, rand_neuron_idx,
+                                                                 vec!["v_rest", "v_reset", "v_tau", "v_th"]
+                                                                     .get(rand::thread_rng().gen_range(0..4)).unwrap().to_string()
+                    );
+                }
+                _ => {
+                    println!("Error unknown component");
+                }
+            }
+            let res = snn_tmp.solve_multiple_vec_spike(input.clone(), 11);
+            //println!("{:?}", res);
+            if are_equal(&res, &right_output) {
+                count_right_outputs+=1;
             }
         }
-        snn2.solve_multiple_vec_spike(input,11);
+        println!("for this SNN, running the stuck bit {} times, in {}% of cases the output is the same", self.times, count_right_outputs as f64 / self.times as f64 * 100.0);
     }
+
+}
+pub fn are_equal(
+    a: &Arc<Mutex<Vec<(u128, Vec<u128>)>>>,
+    b: &Arc<Mutex<Vec<(u128, Vec<u128>)>>>
+) -> bool {
+    // Lock entrambi i Mutex.
+    let a_guard = a.lock().unwrap();
+    let b_guard = b.lock().unwrap();
+    *a_guard == *b_guard
 }

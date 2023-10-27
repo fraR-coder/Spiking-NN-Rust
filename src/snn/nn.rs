@@ -2,7 +2,7 @@
 use crate::Model;
 use crate::snn::layer::Layer;
 use nalgebra::{DMatrix, DVector};
-use std::sync::{mpsc};
+use std::sync::{Arc, mpsc, Mutex};
 use std::thread;
 
 use super::Spike;
@@ -177,11 +177,17 @@ impl<M: Model+Clone> NN<M> {
     /// Solves the SNN given a vector of Tuple (neuron_id, vectors of spikes) -> (Vec<(u128,Vec<u128>)>).
     /// Each spike is referred to a single input neuron.
     /// In this way neurons have a reduced visibility if the input.
-    pub fn solve_multiple_vec_spike(&mut self, input: Vec<(u128, Vec<u128>)>, duration: usize) {
-        println!("Enter solve multiple vec spike");
+    pub fn solve_multiple_vec_spike(&mut self, input: Vec<(u128, Vec<u128>)>, duration: usize) -> Arc<Mutex<Vec<(u128, Vec<u128>)>>> {
+        //println!("Enter solve multiple vec spike");
         let mut index_input: usize=0;
         // creo tanti canali quanti sono i layer
         let num_layers = self.get_num_layers();
+        let shared_output = Arc::new(Mutex::new(Vec::<(u128, Vec<u128>)>::new()));
+        for i in 0..self.layers.last().unwrap().num_neurons(){
+            shared_output.lock().unwrap().push((i as u128, vec![]));
+        }
+
+        // let mut output:Vec<(u128, Vec<u128>)> = vec![];
         let mut channel_tx = vec![];
         let mut channel_rx = vec![];
         let (mut first_tx, _) = mpsc::channel();
@@ -205,6 +211,7 @@ impl<M: Model+Clone> NN<M> {
             let rx = channel_rx.remove(0);
             let mut layers = self.layers.clone();
             let thread_name=format!("layer_{}", layer_idx);
+            let output_clone = shared_output.clone();
             let handle = thread:://Builder::new()
             /*.name(thread_name) // Imposta il nome del thread*/
             spawn(move || {
@@ -213,7 +220,7 @@ impl<M: Model+Clone> NN<M> {
                 let mut ts:u128= 0;
                 let mut counter:u128 = 0;
                 let mut neuron_counters: Vec<u128> = vec![];
-                for i in 0..layers[layer_idx].num_neurons(){
+                for _ in 0..layers[layer_idx].num_neurons(){
                     neuron_counters.push(0);
                 }
                 while ts <= duration as u128 + layer_idx as u128{
@@ -233,13 +240,13 @@ impl<M: Model+Clone> NN<M> {
                             next_tx.send(vec![]).expect("Error sending the vector of spikes");
                             break;
                         } else {
-                            println!("counter: {}",counter);
-                            println!("neuron counters: {:?}",neuron_counters);
+                            //println!("counter: {}",counter);
+                            //println!("neuron counters: {:?}",neuron_counters);
 
                             break;
                         }
                     }
-                    println!("input_spikes: {:?} (Thread: {})",input_spike,thread_name);
+                    //println!("input_spikes: {:?} (Thread: {})",input_spike,thread_name);
                     //println!("input ts: {}, layer_idx: {}",input_spike[0].ts.clone(), layer_idx.clone());
                     //ts=input_spike[0].ts-layer_idx as u128;
                     //println!("Receive vec: {:?}",input_spike);
@@ -263,13 +270,16 @@ impl<M: Model+Clone> NN<M> {
                     // Invio dei nuovi spike al layer successivo (se presente)
                     if let Some(next_tx) = &next_tx {
                         if !layer_output.is_empty(){
-                            println!("vec in output: {:?} sent from thread:{}",layer_output.clone(),thread_name);
+                            //println!("vec in output: {:?} sent from thread:{}",layer_output.clone(),thread_name);
                             next_tx.send(layer_output.clone()).expect("Error sending the vector of spikes");
                             layers[layer_idx].update_layer_ciclo(&layer_output);
                         }
                     } else {
                         for s in layer_output.iter(){
-                            println!("final Output: {} (thread: {})",s.clone(),thread_name);
+                            if let Some((_, v)) = output_clone.lock().unwrap().iter_mut().find(|(k, _)| *k == s.neuron_id as u128) {
+                                v.push(s.ts);
+                            }
+                            //println!("final Output: {} (thread: {})",s.clone(),thread_name);
                             counter+=1;
                             neuron_counters[s.neuron_id]+=1;
                         }
@@ -282,7 +292,6 @@ impl<M: Model+Clone> NN<M> {
                 //let mut layer_data = layer_clone[layer_idx].lock().unwrap();
                 //layer_data.extend(layer_output);
             });
-
             handles.push(handle);
         }
         let input_spikes=Spike::vec_of_all_spikes(input);
@@ -309,7 +318,7 @@ impl<M: Model+Clone> NN<M> {
                 }
             }
             first_tx.send(vec_of_spikes.clone()).expect("Error sending the vector of spikes");
-            println!("Sent vec: {:?} to T0",vec_of_spikes);
+            //println!("Sent vec: {:?} to T0",vec_of_spikes);
             ts+=1;
         }
         first_tx.send(vec![]).expect("Error sending the vector of spikes");
@@ -318,6 +327,7 @@ impl<M: Model+Clone> NN<M> {
         for handle in handles {
             handle.join().expect("Ok"); //.expect("Failed to join a thread");
         }
+        return shared_output;
     }
 
 

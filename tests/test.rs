@@ -3,7 +3,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use nalgebra::DMatrix;
 use spiking_nn_resilience::lif::{Configuration, LeakyIntegrateFire, LifNeuron};
 use spiking_nn_resilience::*;
-use spiking_nn_resilience::snn::resilience;
+//use spiking_nn_resilience::snn::resilience;
 use spiking_nn_resilience::snn::resilience::Resilience;
 
 #[test]
@@ -123,7 +123,7 @@ fn test_single_thread() {
         .unwrap()
         .as_nanos();
     let res = nn.expect("error in nn").solve_single_thread(input);
-
+    println!("{:?}",res);
     let time2 = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .unwrap()
@@ -323,7 +323,7 @@ fn test_fun_execute_resilience() {
     let config_2 = Configuration::new(1.7, 0.3, 3.4, 1.0); // L0n2
     let config_3 = Configuration::new(2.0, 0.8, 4.3, 1.0); //       L1n1
 
-    let mut nn = NN::<LeakyIntegrateFire>::new().layer(
+    let nn = NN::<LeakyIntegrateFire>::new().layer(
         vec![
             LifNeuron::from_conf(&config_0),
             LifNeuron::from_conf(&config_1),
@@ -391,7 +391,7 @@ fn test_fun_execute_resilience() {
         (1, vec![1,2,5,7,8,10,11]),
         (2, vec![1,2,5,7,8,10,11]),
     ];
-    let configuration: Resilience = Resilience::new(vec!["Neurons".to_string(), "Input Links".to_string()], 1, 5);
+    let configuration: Resilience = Resilience::new(vec!["Neurons".to_string()], 1, 10000);
 
     configuration.execute_resilience_test(nn.clone().unwrap(),spikes);
 }

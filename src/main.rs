@@ -42,6 +42,7 @@ fn f1() {
 
 }
 */
+/*
 fn matrix_mul(){
     let mat1 = DMatrix::from_vec(3, 3, vec![
         1.0, 2.0, 0.0,
@@ -60,9 +61,14 @@ fn matrix_mul(){
     println!("Risultato:\n{}", result);
 }
 
+ */
+/*
 fn get_random_component(resilience: Resilience) -> String{
     resilience.get_rand_component()
 }
+
+ */
+/*
 fn f2() -> Result<NN<LeakyIntegrateFire>, String> {
     let config1 = Configuration::new(2.0, 0.5, 2.0, 1.0);
     let config2 = Configuration::new(2.5, 1.0, 4.0, 1.0);
@@ -87,14 +93,16 @@ fn f2() -> Result<NN<LeakyIntegrateFire>, String> {
     return nn;
 }
 
+ */
+/*
 fn test_solve(nn:NN<LeakyIntegrateFire>, input: Vec<u128>) {
     let mut nn_temp = nn.clone();
     nn_temp.solve_single_vec_spike(input);
 }
-
+*/
 fn main() {
-    let nn = f2().unwrap();
-    let input = vec![0,2,5];
+    //let nn = f2().unwrap();
+    //let input = vec![0,2,5];
     //matrix_mul();
 
     //nn.solve_single_thread(input);

@@ -80,7 +80,7 @@ impl<M: Model + Clone+'static> Layer<M> {
 
                 let mut sum=0.;
                 for spike in vec_spike.iter(){
-                    sum += 1.0*self.intra_weights[(spike.neuron_id, neuron_idx as usize)]; // da reimplementare in una funzione a parte con gli stuck
+                    sum += 1.0*self.intra_weights[(spike.neuron_id, neuron_idx)]; // da reimplementare in una funzione a parte con gli stuck
                 }
                 M::update_v_mem(self.get_neuron_mut(neuron_idx).unwrap(),sum);
 
@@ -94,7 +94,7 @@ impl<M: Model + Clone+'static> Layer<M> {
                 M::update_v_th(neuron, stuck);
             }
             "v_rest" => {
-                println!("Entrato in v_rest del layer: ");
+                //println!("Entrato in v_rest del layer: ");
                 M::update_v_rest(neuron, stuck);
             }
             "v_reset" => {

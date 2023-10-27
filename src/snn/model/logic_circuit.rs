@@ -113,20 +113,20 @@ where
         _ => panic!("Invalid field selected"),
     };
 
-    let bit = getRandomBit(field);
-    let new_val = do_logic_operation(bit);
+    //let bit = get_random_bit(/*field*/);
+    let new_val = do_logic_operation(/*bit*/);
 
     *field = new_val;
 }
 
-fn getRandomBit<T>(field: &T) -> bool {
+fn get_random_bit<T>(/*field: &T*/) -> bool {
     // Implement logic to get a random bit based on the field's value
     // This is just a placeholder function
     // You need to implement your logic here.
     unimplemented!()
 }
 
-fn do_logic_operation<T>(bit: bool) -> T {
+fn do_logic_operation<T>(/*bit: bool*/) -> T {
     // Implement logic to perform a logic operation based on the bit
     // This is just a placeholder function
     // You need to implement your logic here.

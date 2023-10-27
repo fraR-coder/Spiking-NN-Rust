@@ -133,15 +133,15 @@ impl Model for LeakyIntegrateFire {
 
     fn update_v_rest(neuron: &mut Self::Neuron, stuck:bool) {
         let mut bits: u64 = neuron.v_rest.to_bits();
-        println!("vecchi bit: {}",bits);
+        //println!("vecchi bit: {}",bits);
         let random_bit_index = rand::thread_rng().gen_range(0..64);
         if stuck { // if stuck_at_bit_1
             bits |= 1u64 << random_bit_index;
         } else {
             bits &= !(1u64 << random_bit_index);
         }
-        println!("update_v_rest: {}",random_bit_index);
-        println!("nuovi bit: {}",bits);
+        //println!("update_v_rest: {}",random_bit_index);
+        //println!("nuovi bit: {}",bits);
         neuron.v_rest=f64::from_bits(bits);
     }
 
