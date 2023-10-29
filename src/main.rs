@@ -42,8 +42,8 @@ fn f1() {
 
 }
 */
-/*
-fn matrix_mul(){
+
+fn _matrix_mul(){
     let mat1 = DMatrix::from_vec(3, 3, vec![
         1.0, 2.0, 0.0,
         0.0,1.0,0.0,
@@ -61,13 +61,6 @@ fn matrix_mul(){
     println!("Risultato:\n{}", result);
 }
 
- */
-/*
-fn get_random_component(resilience: Resilience) -> String{
-    resilience.get_rand_component()
-}
-
- */
 /*
 fn f2() -> Result<NN<LeakyIntegrateFire>, String> {
     let config1 = Configuration::new(2.0, 0.5, 2.0, 1.0);

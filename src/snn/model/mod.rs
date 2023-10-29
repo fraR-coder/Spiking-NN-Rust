@@ -3,7 +3,6 @@
 
 
 use std::fmt::Debug;
-use self::lif::LifNeuron;
 
 
 pub mod lif;

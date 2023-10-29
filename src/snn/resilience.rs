@@ -48,6 +48,8 @@ impl Resilience {
             let mut snn_tmp = snn.clone();
             //println!(solution);
             //println!("Type: {}",&self.get_rand_component().to_lowercase() as &str);
+            
+            //select a random componente between the one chosen by the user
             let component = self.get_rand_component().to_lowercase();
 
             match &component as &str {
@@ -63,6 +65,10 @@ impl Resilience {
                             .unwrap()
                             .to_string(),
                     );
+                }
+                ("fullAdder"|"full adder" | "full-adder"|"full_adder"|"adder")=>{
+                    
+
                 }
                 _ => {
                     println!("Error unknown component");

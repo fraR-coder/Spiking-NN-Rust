@@ -6,6 +6,8 @@ use crate::snn::model::Model;
 use std::f64;
 use rand::Rng;
 
+use super::logic_circuit::{FullAdder, Multiplier};
+
 #[derive(Clone, Debug)]
 pub struct LifNeuron {
     /// Rest potential
@@ -19,6 +21,10 @@ pub struct LifNeuron {
 
     pub v_mem: f64,
     pub ts_old: u128,
+
+    pub full_adder: FullAdder<f64>,
+    pub multiplier:Multiplier<f64>,
+    
 }
 /// A struct used to create a specific configuration, simply reusable for other neurons
 
@@ -42,6 +48,10 @@ impl LifNeuron {
             tau,
             v_mem: 0.0, //inizialmente a 0?
             ts_old: 0,
+
+            full_adder:FullAdder::new(),
+            multiplier:Multiplier::new(),
+            
         }
     }
 
@@ -123,6 +133,8 @@ impl Model for LeakyIntegrateFire {
             0.0
         }
     }
+
+
     fn update_v_mem(neuron: &mut LifNeuron, val: f64){
         if neuron.v_mem+val >= 0.0 {
             neuron.v_mem+=val;
