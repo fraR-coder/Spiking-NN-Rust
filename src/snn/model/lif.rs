@@ -6,7 +6,7 @@ use crate::snn::model::Model;
 use std::f64;
 use rand::Rng;
 
-use super::logic_circuit::{FullAdder, Multiplier};
+use super::logic_circuit::{FullAdder, Multiplier, FullAdderTree};
 
 #[derive(Clone, Debug)]
 pub struct LifNeuron {
@@ -22,7 +22,7 @@ pub struct LifNeuron {
     pub v_mem: f64,
     pub ts_old: u128,
 
-    pub full_adder: FullAdder<f64>,
+    pub full_adder_tree: Option<FullAdderTree<f64>>,
     pub multiplier:Multiplier<f64>,
     
 }
@@ -49,7 +49,7 @@ impl LifNeuron {
             v_mem: 0.0, //inizialmente a 0?
             ts_old: 0,
 
-            full_adder:FullAdder::new(),
+            full_adder_tree:None,
             multiplier:Multiplier::new(),
             
         }
@@ -188,5 +188,11 @@ impl Model for LeakyIntegrateFire {
             bits &= !(1u64 << random_bit_index);
         }
         neuron.tau=f64::from_bits(bits);
+    }
+
+
+    fn use_full_adder(neuron: &mut Self::Neuron,stuck: bool,n_inputs: usize) {
+        neuron.full_adder_tree=Some(FullAdderTree::new(n_inputs));
+        
     }
 }

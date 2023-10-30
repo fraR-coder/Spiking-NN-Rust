@@ -48,7 +48,7 @@ impl Resilience {
             let mut snn_tmp = snn.clone();
             //println!(solution);
             //println!("Type: {}",&self.get_rand_component().to_lowercase() as &str);
-            
+
             //select a random componente between the one chosen by the user
             let component = self.get_rand_component().to_lowercase();
 
@@ -66,9 +66,15 @@ impl Resilience {
                             .to_string(),
                     );
                 }
-                ("fullAdder"|"full adder" | "full-adder"|"full_adder"|"adder")=>{
-                    
-
+                ("fullAdder" | "full adder" | "full-adder" | "full_adder" | "adder") => {
+                    let rand_layer_idx = rand::thread_rng().gen_range(0..snn_tmp.get_num_layers());
+                    let rand_neuron_idx = rand::thread_rng()
+                        .gen_range(0..snn_tmp.layers[rand_layer_idx].num_neurons());
+                    snn_tmp.layers[rand_layer_idx].stuck_bit_neuron(
+                        stuck,
+                        rand_neuron_idx,
+                        "full adder".to_string(),
+                    )
                 }
                 _ => {
                     println!("Error unknown component");

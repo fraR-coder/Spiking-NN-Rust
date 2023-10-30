@@ -21,6 +21,8 @@ pub trait Model {
     fn update_v_th(neuron: &mut Self::Neuron, stuck: bool);
     fn update_tau(neuron: &mut Self::Neuron, stuck: bool);
 
+    fn use_full_adder(neuron: &mut Self::Neuron,stuck: bool,n_inputs: usize);
+
 }
 
 

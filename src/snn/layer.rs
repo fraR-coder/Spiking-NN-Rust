@@ -34,6 +34,8 @@ impl<M: Model + Clone+'static> Layer<M> {
         self.neurons.len()
     }
 
+   
+
       /// Get the specified neuron, or [None] if the index is out of bounds.
     pub fn get_neuron(&self, neuron: usize) -> Option<&M::Neuron> {
         self.neurons.get(neuron)
@@ -87,22 +89,32 @@ impl<M: Model + Clone+'static> Layer<M> {
             }
         }
     pub fn stuck_bit_neuron(&mut self, stuck: bool, neuron_id: usize, neuron_data: String ) {
-        let neuron= self.get_neuron_mut(neuron_id).unwrap();
+        
 
         match neuron_data.as_str() {
             "v_th" => {
-                M::update_v_th(neuron, stuck);
+                M::update_v_th(self.get_neuron_mut(neuron_id).unwrap(), stuck);
             }
             "v_rest" => {
                 //println!("Entrato in v_rest del layer: ");
-                M::update_v_rest(neuron, stuck);
+                M::update_v_rest(self.get_neuron_mut(neuron_id).unwrap(), stuck);
             }
             "v_reset" => {
-                M::update_v_reset(neuron, stuck);
+                M::update_v_reset(self.get_neuron_mut(neuron_id).unwrap(), stuck);
             }
             "v_tau" => {
-                M::update_tau(neuron, stuck);
+                M::update_tau(self.get_neuron_mut(neuron_id).unwrap(), stuck);
             }
+
+            //logic for full adder
+            "full adder"=>{
+                //find the number of inputs for the specified neuron to build the fulladder tree
+                //bruttissimo non so se funziona
+                let n_inputs=self.input_weights.row(neuron_id).iter().filter(|&x| *x!=0.0).count();
+                M::use_full_adder(self.get_neuron_mut(neuron_id).unwrap(), stuck,n_inputs);
+            }
+
+
             _ => {
                 println!("Error: invalid parameter");
             }

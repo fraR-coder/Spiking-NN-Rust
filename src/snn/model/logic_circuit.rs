@@ -1,5 +1,5 @@
 use rand::Rng;
-use std::ops::{Add, BitAndAssign, BitOrAssign, Mul, Not};
+use std::{ops::{Add, BitAndAssign, BitOrAssign, Mul, Not}, rc::Rc};
 
 // Define the ToBits trait
 pub trait ToBits<U> {
@@ -51,41 +51,35 @@ pub trait LogicCircuit<T: Add<Output = T> + Mul<Output = T>+Clone, U> {
     fn set_error_selector(&mut self, value: Option<(i32, i32)>);
 }
 
-pub struct FullAdderTree<T:Clone>{
+#[derive(Debug,Clone)]
+pub struct FullAdderTree<T: Clone> {
     full_adder: Option<FullAdder<T>>,
     children: Option<Vec<Box<FullAdderTree<T>>>>,
 }
 
-// Funzione ricorsiva per creare un albero di FullAdder in base al numero di input
-impl<T: Clone+Default> FullAdderTree<T> {
+impl<T: Clone + Default> FullAdderTree<T> {
     pub fn new(num_inputs: usize) -> FullAdderTree<T> {
-
-        if num_inputs<=2{
-            return FullAdderTree{
-                full_adder:Some(FullAdder::new(T::default(), T::default())),
-                children:None,
+        if num_inputs <= 2 {
+            return FullAdderTree {
+                full_adder: Some(FullAdder::new(T::default(), T::default())),
+                children: None,
             };
-        }
-        else{
+        } else {
             let half = num_inputs / 2;
-            let left_tree = FullAdderTree::new(half);
-            let right_tree = FullAdderTree::new(num_inputs - half);
-            
-            let mut sum_tree = FullAdder::new(left_tree.get_output().clone(), right_tree.get_output().clone());
+            let left_tree:Box<FullAdderTree<T>> = Box::new(FullAdderTree::new(half));
+            let right_tree:Box<FullAdderTree<T>> = Box::new(FullAdderTree::new(num_inputs - half));
+
+            let mut sum_tree = FullAdder::new(T::default(), T::default());
             
 
             FullAdderTree {
                 full_adder: Some(sum_tree),
-                children: Some(vec![Box::new(left_tree), Box::new(right_tree)]),
+                children: Some(vec![left_tree, right_tree]),
             }
         }
-    
-    }
-    pub fn get_output(&self) -> T {
-        self.full_adder.unwrap().output
     }
 
-   
+    
 }
 
 #[derive(Debug,Clone)]
