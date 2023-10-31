@@ -39,7 +39,7 @@ It is parameterized with two types, T and U. T is the type of the values taht pe
 The error selector is a field to keep track of the selected field( i1,i2,o) and selected bit to apply the error bit injection
 */
 pub trait LogicCircuit<T: Add<Output = T> + Mul<Output = T> + Clone, U> {
-    fn operation(&self) -> T;
+    fn operation(&mut self, stuck: bool) -> T;
     fn set_random_bit(&mut self, stuck: bool);
     fn get_input1(&self) -> T;
     fn set_input1(&mut self, value: T);
@@ -52,15 +52,21 @@ pub trait LogicCircuit<T: Add<Output = T> + Mul<Output = T> + Clone, U> {
 }
 
 #[derive(Debug, Clone)]
-pub struct Node<T:Clone>{
-    full_adder:FullAdder<T>,
-    children: Option<Vec<Box<Node<T>>>>,
+pub enum Node<T: Clone> {
+    FullAdderNode(FullAdderNode<T>),
+    Value(T),
+}
+#[derive(Debug, Clone)]
+pub struct FullAdderNode<T: Clone> {
+    full_adder: FullAdder<T>,
+    left: Option<Box<Node<T>>>,
+    right: Option<Box<Node<T>>>,
 }
 
 #[derive(Debug, Clone)]
 pub struct FullAdderTree<T: Clone> {
-    root:Option<Node<T>>,
-    full_adders_list:Vec<FullAdder<T>>,
+    root: Option<Node<T>>,
+    full_adders_list: Vec<FullAdder<T>>,
 }
 
 impl<T: Clone + Default> FullAdderTree<T> {
@@ -71,33 +77,37 @@ impl<T: Clone + Default> FullAdderTree<T> {
             full_adders_list,
         }
     }
+
     fn create_tree_and_list(num_inputs: usize) -> (Node<T>, Vec<FullAdder<T>>) {
-        if num_inputs <= 2 {
+        if num_inputs == 2 {
             let full_adder = FullAdder::new(T::default(), T::default());
-            (
-                Node {
-                    full_adder: full_adder.clone(),
-                    children: None,
-                },
-                vec![full_adder],
-            )
+            let adder = Node::FullAdderNode(FullAdderNode {
+                full_adder: full_adder.clone(),
+                left: None,
+                right: None,
+            });
+
+            return (adder, vec![full_adder]);
+        } else if num_inputs < 2 {
+            let value = Node::Value(T::default());
+            return (value, vec![]);
         } else {
             let half = num_inputs / 2;
             let (left_tree, left_full_adders) = FullAdderTree::create_tree_and_list(half);
-            let (right_tree, right_full_adders) = FullAdderTree::create_tree_and_list(num_inputs - half);
+            let (right_tree, right_full_adders) =
+                FullAdderTree::create_tree_and_list(num_inputs - half);
 
             let sum_tree = FullAdder::new(T::default(), T::default());
             let mut full_adders = vec![sum_tree.clone()];
             full_adders.extend(left_full_adders);
             full_adders.extend(right_full_adders);
 
-            (
-                Node {
-                    full_adder: sum_tree,
-                    children: Some(vec![Box::new(left_tree), Box::new(right_tree)]),
-                },
-                full_adders,
-            )
+            let adder = Node::FullAdderNode(FullAdderNode {
+                full_adder: sum_tree.clone(),
+                left: None,
+                right: None,
+            });
+            return (adder, full_adders);
         }
     }
 
@@ -105,10 +115,37 @@ impl<T: Clone + Default> FullAdderTree<T> {
         self.full_adders_list.len()
     }
 
-    pub fn get_full_adder_mut(&mut self,index:usize) ->Option<&mut FullAdder<T>>{
-
+    pub fn get_full_adder_mut(&mut self, index: usize) -> Option<&mut FullAdder<T>> {
         self.full_adders_list.get_mut(index)
+    }
 
+    pub fn solve_tree_addition(&mut self, inputs: Vec<T>) {
+        if let Some(root) = &self.root {
+            FullAdderTree::solve_recursive(root, inputs);
+        };
+    }
+
+    fn solve_recursive(node: &Node<T>, inputs: Vec<T>)->&T {
+        match node {
+            Node::FullAdderNode(full_adder_node) => {
+                if let Some(left)=&full_adder_node.left{
+                    let value=Self::solve_recursive(left, inputs);
+                    full_adder_node.full_adder.input1=value.clone();
+                }
+                if let Some(right)=&full_adder_node.right{
+                    let value=Self::solve_recursive(right, inputs);
+                    full_adder_node.full_adder.input2=value.clone();
+                }
+
+                //compute sum with method in full_adder
+                let sum=&T::default();
+                return sum;
+
+            }
+            Node::Value(value)=>{
+                return value;
+            }
+        };
     }
 }
 
@@ -139,7 +176,8 @@ where
     T: Add<Output = T> + Mul<Output = T> + Clone + ToBits<U>,
     U: BitOrAssign + Not<Output = U> + BitAndAssign + Clone,
 {
-    fn operation(&self) -> T {
+    fn operation(&mut self, stuck: bool) -> T {
+        self.set_random_bit(stuck);
         self.input1.clone() + self.input2.clone()
     }
 
@@ -209,7 +247,7 @@ where
     T: Add<Output = T> + Mul<Output = T> + Clone + ToBits<U>,
     U: BitOrAssign + Not<Output = U> + BitAndAssign,
 {
-    fn operation(&self) -> T {
+    fn operation(&mut self, stuck: bool) -> T {
         self.input1.clone() * self.input2.clone()
     }
 
@@ -271,17 +309,17 @@ where
     match field_to_set {
         1 => {
             let value = circuit.get_input1();
-            let new_val = apply_injection(value, stuck, &mut error_selector,field_to_set);
+            let new_val = apply_injection(value, stuck, &mut error_selector, field_to_set);
             circuit.set_input1(new_val);
         }
         2 => {
             let value = circuit.get_input2();
-            let new_val = apply_injection(value, stuck, &mut error_selector,field_to_set);
+            let new_val = apply_injection(value, stuck, &mut error_selector, field_to_set);
             circuit.set_input2(new_val);
         }
         3 => {
             let value = circuit.get_output();
-            let new_val = apply_injection(value, stuck,&mut error_selector,field_to_set);
+            let new_val = apply_injection(value, stuck, &mut error_selector, field_to_set);
             circuit.set_output(new_val);
         }
         _ => panic!("Invalid field selected"),
@@ -291,7 +329,7 @@ where
 /*
 It modifies the value by either setting or clearing a specific bit based on the stuck flag and the provided error selector.
 It returns the modified value. */
-pub fn apply_injection<T, U>(value: T, stuck: bool, index:&mut Option<(i32, i32)>,field:i32) -> T
+pub fn apply_injection<T, U>(value: T, stuck: bool, index: &mut Option<(i32, i32)>, field: i32) -> T
 where
     T: ToBits<U>,
     U: BitOrAssign + Not<Output = U> + BitAndAssign,
@@ -305,7 +343,7 @@ where
             let num_bits = value.num_bits();
             //update value of index for the error for the enxt iterations
 
-            *index=Some((field,rand::thread_rng().gen_range(0..num_bits)));
+            *index = Some((field, rand::thread_rng().gen_range(0..num_bits)));
 
             rand::thread_rng().gen_range(0..num_bits)
         }
@@ -317,6 +355,6 @@ where
     } else {
         bits &= !(value.create_mask(random_bit_index));
     }
-    
+
     T::from_bits(bits)
 }

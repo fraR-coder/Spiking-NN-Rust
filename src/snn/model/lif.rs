@@ -196,10 +196,7 @@ impl Model for LeakyIntegrateFire {
         let full_adder = full_adder_tree
             .get_full_adder_mut(rand::thread_rng().gen_range(0..full_adder_tree.get_num_full_adders()))
             .expect("index out of bound");
-        //apply injection on the full adder
-        //every time this specific full adder will do a sum it will use the data modified by fault injection
-        full_adder.set_random_bit(stuck);
-
+        
         neuron.full_adder_tree = Some(full_adder_tree);
     }
 }

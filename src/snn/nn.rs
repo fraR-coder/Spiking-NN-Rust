@@ -126,6 +126,11 @@ impl<M: Model+Clone> NN<M> {
                         let mut sum:f64 = 0.0;
                         let input_spike_tmp = input_spike.clone();
                         for spike in input_spike_tmp.into_iter(){
+                            let neuron=layers[layer_idx].get_neuron(neuron_idx as usize);
+                            
+
+
+                            //sum_whith_injection(neuron_idx,layers[layer_idx],spike);
                             sum += 1.0*layers[layer_idx].input_weights[[neuron_idx as usize][spike.neuron_id]]; // da reimplementare in una funzione a parte con gli stuck
                         }
                         let res = M::handle_spike(layers[layer_idx].get_neuron_mut(neuron_idx as usize).unwrap(),sum, ts);
@@ -331,6 +336,11 @@ impl<M: Model+Clone> NN<M> {
     }
 
 
+    pub fn sum_whith_injection(neuron_idx:usize,layer:Layer<M>,spike:Spike){
+
+       
+
+    }
     /*
     pub fn solve(&mut self, input: Vec<Vec<u8>>, duration: u128) {
         for t in 0..duration {
