@@ -1,5 +1,8 @@
 use rand::Rng;
-use std::{ops::{Add, BitAndAssign, BitOrAssign, Mul, Not}, rc::Rc};
+use std::{
+    ops::{Add, BitAndAssign, BitOrAssign, Mul, Not},
+    rc::Rc,
+};
 
 // Define the ToBits trait
 pub trait ToBits<U> {
@@ -38,7 +41,7 @@ for setting and getting inputs, outputs, and error selectors.
 It is parameterized with two types, T and U. T is the type of the values taht perform the operations. U is the type of the rappresentation in bit of T (e.g. T:f64->U:u64)
 The error selector is a field to keep track of the selected field( i1,i2,o) and selected bit to apply the error bit injection
 */
-pub trait LogicCircuit<T: Add<Output = T> + Mul<Output = T>+Clone, U> {
+pub trait LogicCircuit<T: Add<Output = T> + Mul<Output = T> + Clone, U> {
     fn operation(&self) -> T;
     fn set_random_bit(&mut self, stuck: bool);
     fn get_input1(&self) -> T;
@@ -51,53 +54,75 @@ pub trait LogicCircuit<T: Add<Output = T> + Mul<Output = T>+Clone, U> {
     fn set_error_selector(&mut self, value: Option<(i32, i32)>);
 }
 
-#[derive(Debug,Clone)]
+#[derive(Debug, Clone)]
+pub struct Node<T:Clone>{
+    full_adder:FullAdder<T>,
+    children: Option<Vec<Box<Node<T>>>>,
+}
+
+#[derive(Debug, Clone)]
 pub struct FullAdderTree<T: Clone> {
-    full_adder: Option<FullAdder<T>>,
-    children: Option<Vec<Box<FullAdderTree<T>>>>,
+    root:Option<Node<T>>,
+    full_adders_list:Vec<FullAdder<T>>,
 }
 
 impl<T: Clone + Default> FullAdderTree<T> {
     pub fn new(num_inputs: usize) -> FullAdderTree<T> {
-        if num_inputs <= 2 {
-            return FullAdderTree {
-                full_adder: Some(FullAdder::new(T::default(), T::default())),
-                children: None,
-            };
-        } else {
-            let half = num_inputs / 2;
-            let left_tree:Box<FullAdderTree<T>> = Box::new(FullAdderTree::new(half));
-            let right_tree:Box<FullAdderTree<T>> = Box::new(FullAdderTree::new(num_inputs - half));
-
-            let mut sum_tree = FullAdder::new(T::default(), T::default());
-            
-
-            FullAdderTree {
-                full_adder: Some(sum_tree),
-                children: Some(vec![left_tree, right_tree]),
-            }
+        let (root, full_adders_list) = FullAdderTree::create_tree_and_list(num_inputs);
+        FullAdderTree {
+            root: Some(root),
+            full_adders_list,
         }
     }
+    fn create_tree_and_list(num_inputs: usize) -> (Node<T>, Vec<FullAdder<T>>) {
+        if num_inputs <= 2 {
+            let full_adder = FullAdder::new(T::default(), T::default());
+            (
+                Node {
+                    full_adder: full_adder.clone(),
+                    children: None,
+                },
+                vec![full_adder],
+            )
+        } else {
+            let half = num_inputs / 2;
+            let (left_tree, left_full_adders) = FullAdderTree::create_tree_and_list(half);
+            let (right_tree, right_full_adders) = FullAdderTree::create_tree_and_list(num_inputs - half);
 
-    
+            let sum_tree = FullAdder::new(T::default(), T::default());
+            let mut full_adders = vec![sum_tree.clone()];
+            full_adders.extend(left_full_adders);
+            full_adders.extend(right_full_adders);
+
+            (
+                Node {
+                    full_adder: sum_tree,
+                    children: Some(vec![Box::new(left_tree), Box::new(right_tree)]),
+                },
+                full_adders,
+            )
+        }
+    }
 }
 
-#[derive(Debug,Clone)]
-pub struct FullAdder<T:Clone> {
+#[derive(Debug, Clone)]
+pub struct FullAdder<T: Clone> {
     input1: T,
     input2: T,
     output: T,
     error_selector: Option<(i32, i32)>,
 }
 
-impl<T> FullAdder<T> where T:Clone+ Default {
-    pub fn new(input_left:T, input_right:T) -> FullAdder<T> {
+impl<T> FullAdder<T>
+where
+    T: Clone + Default,
+{
+    pub fn new(input_left: T, input_right: T) -> FullAdder<T> {
         return Self {
-            input1:input_left,
-            input2:input_right,
-            error_selector:None,
+            input1: input_left,
+            input2: input_right,
+            error_selector: None,
             output: T::default(),
-            
         };
     }
 }
@@ -105,7 +130,7 @@ impl<T> FullAdder<T> where T:Clone+ Default {
 impl<T, U> LogicCircuit<T, U> for FullAdder<T>
 where
     T: Add<Output = T> + Mul<Output = T> + Clone + ToBits<U>,
-    U: BitOrAssign + Not<Output = U> + BitAndAssign+ Clone,
+    U: BitOrAssign + Not<Output = U> + BitAndAssign + Clone,
 {
     fn operation(&self) -> T {
         self.input1.clone() + self.input2.clone()
@@ -150,22 +175,24 @@ where
     }
 }
 
-#[derive(Debug,Clone)]
-pub struct Multiplier<T:Clone> {
+#[derive(Debug, Clone)]
+pub struct Multiplier<T: Clone> {
     input1: T,
     input2: T,
     output: T,
     error_selector: Option<(i32, i32)>,
 }
 
-impl<T> Multiplier<T> where T:Clone+ Default {
+impl<T> Multiplier<T>
+where
+    T: Clone + Default,
+{
     pub fn new() -> Multiplier<T> {
         return Self {
-            input1:T::default(),
-            input2:T::default(),
-            error_selector:None,
+            input1: T::default(),
+            input2: T::default(),
+            error_selector: None,
             output: T::default(),
-            
         };
     }
 }
