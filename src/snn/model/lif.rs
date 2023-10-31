@@ -1,12 +1,10 @@
 //! Implementation of the Leaky Integrate and Fire (LIF) model for Spiking Neural Networks
 
-
-
 use crate::snn::model::Model;
-use std::f64;
 use rand::Rng;
+use std::f64;
 
-use super::logic_circuit::{FullAdder, Multiplier, FullAdderTree};
+use super::logic_circuit::{FullAdder, FullAdderTree, LogicCircuit, Multiplier};
 
 #[derive(Clone, Debug)]
 pub struct LifNeuron {
@@ -23,8 +21,7 @@ pub struct LifNeuron {
     pub ts_old: u128,
 
     pub full_adder_tree: Option<FullAdderTree<f64>>,
-    pub multiplier:Multiplier<f64>,
-    
+    pub multiplier: Multiplier<f64>,
 }
 /// A struct used to create a specific configuration, simply reusable for other neurons
 
@@ -49,9 +46,8 @@ impl LifNeuron {
             v_mem: 0.0, //inizialmente a 0?
             ts_old: 0,
 
-            full_adder_tree:None,
-            multiplier:Multiplier::new(),
-            
+            full_adder_tree: None,
+            multiplier: Multiplier::new(),
         }
     }
 
@@ -59,8 +55,8 @@ impl LifNeuron {
         Self::new(nc.v_rest, nc.v_reset, nc.v_threshold, nc.tau)
     }
 
-    pub fn update_vmem(&mut self,val:f64){
-        self.v_mem+=val;
+    pub fn update_vmem(&mut self, val: f64) {
+        self.v_mem += val;
     }
 
     /// Create a new array of n [LifNeuron] structs, starting from a given Configuration.
@@ -100,17 +96,17 @@ impl Model for LeakyIntegrateFire {
 
     /// Update the value of current membrane tension.
     /// When the neuron receives one or more impulses, it computes the new tension of the membrane
-    /// 
-    /// 
-   
-    /// 
+    ///
+    ///
+
+    ///
     /// This neuron receives a spike at time of spike _ts_ from a number of its input synapses.
     /// The overall weighted input value of this spike (i.e. the sum, across every lit up input synapse,
     /// of the weight of that synapse) is provided via the _weighted_input_val_ parameter.
-    /// 
+    ///
     /// The output of this function is 1.0 iff the neuron has generated a new spike at time _ts_, or 0.0 otherwise.
-    /// 
-    /// 
+    ///
+    ///
 
     fn handle_spike(neuron: &mut LifNeuron, weighted_input_val: f64, ts: u128) -> f64 {
         // This early exit serves as a small optimization
@@ -134,65 +130,76 @@ impl Model for LeakyIntegrateFire {
         }
     }
 
-
-    fn update_v_mem(neuron: &mut LifNeuron, val: f64){
-        if neuron.v_mem+val >= 0.0 {
-            neuron.v_mem+=val;
+    fn update_v_mem(neuron: &mut LifNeuron, val: f64) {
+        if neuron.v_mem + val >= 0.0 {
+            neuron.v_mem += val;
         } else {
-            neuron.v_mem=0.0;
+            neuron.v_mem = 0.0;
         }
     }
 
-    fn update_v_rest(neuron: &mut Self::Neuron, stuck:bool) {
+    fn update_v_rest(neuron: &mut Self::Neuron, stuck: bool) {
         let mut bits: u64 = neuron.v_rest.to_bits();
         //println!("vecchi bit: {}",bits);
         let random_bit_index = rand::thread_rng().gen_range(0..64);
-        if stuck { // if stuck_at_bit_1
+        if stuck {
+            // if stuck_at_bit_1
             bits |= 1u64 << random_bit_index;
         } else {
             bits &= !(1u64 << random_bit_index);
         }
         //println!("update_v_rest: {}",random_bit_index);
         //println!("nuovi bit: {}",bits);
-        neuron.v_rest=f64::from_bits(bits);
+        neuron.v_rest = f64::from_bits(bits);
     }
 
-    fn update_v_reset(neuron: &mut Self::Neuron, stuck:bool) {
+    fn update_v_reset(neuron: &mut Self::Neuron, stuck: bool) {
         let mut bits: u64 = neuron.v_reset.to_bits();
         let random_bit_index = rand::thread_rng().gen_range(0..64);
-        if stuck { // if stuck_at_bit_1
+        if stuck {
+            // if stuck_at_bit_1
             bits |= 1u64 << random_bit_index;
         } else {
             bits &= !(1u64 << random_bit_index);
         }
-        neuron.v_reset=f64::from_bits(bits);
+        neuron.v_reset = f64::from_bits(bits);
     }
 
-    fn update_v_th(neuron: &mut Self::Neuron, stuck:bool) {
+    fn update_v_th(neuron: &mut Self::Neuron, stuck: bool) {
         let mut bits: u64 = neuron.v_th.to_bits();
         let random_bit_index = rand::thread_rng().gen_range(0..64);
-        if stuck { // if stuck_at_bit_1
+        if stuck {
+            // if stuck_at_bit_1
             bits |= 1u64 << random_bit_index;
         } else {
             bits &= !(1u64 << random_bit_index);
         }
-        neuron.v_th=f64::from_bits(bits);
+        neuron.v_th = f64::from_bits(bits);
     }
 
-    fn update_tau(neuron: &mut Self::Neuron, stuck:bool) {
+    fn update_tau(neuron: &mut Self::Neuron, stuck: bool) {
         let mut bits: u64 = neuron.tau.to_bits();
         let random_bit_index = rand::thread_rng().gen_range(0..64);
-        if stuck { // if stuck_at_bit_1
+        if stuck {
+            // if stuck_at_bit_1
             bits |= 1u64 << random_bit_index;
         } else {
             bits &= !(1u64 << random_bit_index);
         }
-        neuron.tau=f64::from_bits(bits);
+        neuron.tau = f64::from_bits(bits);
     }
 
+    fn use_full_adder(neuron: &mut Self::Neuron, stuck: bool, n_inputs: usize) {
+        //create the tree
+        let mut full_adder_tree: FullAdderTree<f64> = FullAdderTree::new(n_inputs);
+        //select the full adder to apply injection
+        let full_adder = full_adder_tree
+            .get_full_adder_mut(rand::thread_rng().gen_range(0..full_adder_tree.get_num_full_adders()))
+            .expect("index out of bound");
+        //apply injection on the full adder
+        //every time this specific full adder will do a sum it will use the data modified by fault injection
+        full_adder.set_random_bit(stuck);
 
-    fn use_full_adder(neuron: &mut Self::Neuron,stuck: bool,n_inputs: usize) {
-        neuron.full_adder_tree=Some(FullAdderTree::new(n_inputs));
-        
+        neuron.full_adder_tree = Some(full_adder_tree);
     }
 }

@@ -1,8 +1,5 @@
 use rand::Rng;
-use std::{
-    ops::{Add, BitAndAssign, BitOrAssign, Mul, Not},
-    rc::Rc,
-};
+use std::ops::{Add, BitAndAssign, BitOrAssign, Mul, Not};
 
 // Define the ToBits trait
 pub trait ToBits<U> {
@@ -102,6 +99,16 @@ impl<T: Clone + Default> FullAdderTree<T> {
                 full_adders,
             )
         }
+    }
+
+    pub fn get_num_full_adders(&self) -> usize {
+        self.full_adders_list.len()
+    }
+
+    pub fn get_full_adder_mut(&mut self,index:usize) ->Option<&mut FullAdder<T>>{
+
+        self.full_adders_list.get_mut(index)
+
     }
 }
 
@@ -253,7 +260,7 @@ where
     T: Add<Output = T> + Mul<Output = T> + Clone + ToBits<U>,
     U: BitOrAssign + Not<Output = U> + BitAndAssign,
 {
-    let error_selector = circuit.get_error_selector();
+    let mut error_selector = circuit.get_error_selector();
 
     //select randomly the field to modify if not already selected
     let field_to_set = match error_selector {
@@ -264,17 +271,17 @@ where
     match field_to_set {
         1 => {
             let value = circuit.get_input1();
-            let new_val = apply_injection(value, stuck, error_selector);
+            let new_val = apply_injection(value, stuck, &mut error_selector,field_to_set);
             circuit.set_input1(new_val);
         }
         2 => {
             let value = circuit.get_input2();
-            let new_val = apply_injection(value, stuck, error_selector);
+            let new_val = apply_injection(value, stuck, &mut error_selector,field_to_set);
             circuit.set_input2(new_val);
         }
         3 => {
             let value = circuit.get_output();
-            let new_val = apply_injection(value, stuck, error_selector);
+            let new_val = apply_injection(value, stuck,&mut error_selector,field_to_set);
             circuit.set_output(new_val);
         }
         _ => panic!("Invalid field selected"),
@@ -284,7 +291,7 @@ where
 /*
 It modifies the value by either setting or clearing a specific bit based on the stuck flag and the provided error selector.
 It returns the modified value. */
-pub fn apply_injection<T, U>(value: T, stuck: bool, index: Option<(i32, i32)>) -> T
+pub fn apply_injection<T, U>(value: T, stuck: bool, index:&mut Option<(i32, i32)>,field:i32) -> T
 where
     T: ToBits<U>,
     U: BitOrAssign + Not<Output = U> + BitAndAssign,
@@ -296,6 +303,10 @@ where
         Some(bit_index) => bit_index.1,
         None => {
             let num_bits = value.num_bits();
+            //update value of index for the error for the enxt iterations
+
+            *index=Some((field,rand::thread_rng().gen_range(0..num_bits)));
+
             rand::thread_rng().gen_range(0..num_bits)
         }
     };
@@ -306,6 +317,6 @@ where
     } else {
         bits &= !(value.create_mask(random_bit_index));
     }
-
+    
     T::from_bits(bits)
 }
