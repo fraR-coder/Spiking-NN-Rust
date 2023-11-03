@@ -4,7 +4,7 @@ use std::ops::{Add, BitAndAssign, BitOrAssign, Mul, Not};
 
 use std::fmt::Debug;
 
-
+pub mod heap;
 pub mod lif;
 pub mod logic_circuit;
 
