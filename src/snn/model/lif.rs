@@ -4,7 +4,7 @@ use crate::snn::model::Model;
 use rand::Rng;
 use std::f64;
 
-use super::{logic_circuit::{FullAdderTree, Multiplier}, LogicCircuit};
+use super::{logic_circuit::{FullAdderTree, Multiplier}};
 
 
 
@@ -192,17 +192,12 @@ impl Model for LeakyIntegrateFire {
     }
 
     fn use_full_adder(neuron: &mut Self::Neuron, stuck: bool, n_inputs: usize) {
-        //create the tree
-        let mut full_adder_tree: FullAdderTree<f64,u64> = FullAdderTree::new(n_inputs);
-        //select the full adder to apply injection
-        let full_adder = full_adder_tree
-            .get_full_adder_mut(rand::thread_rng().gen_range(0..full_adder_tree.get_num_full_adders()))
-            .expect("index out of bound");
         
-        let field=rand::thread_rng().gen_range(1..=3);
-        let bit=rand::thread_rng().gen_range(0..64);
-        full_adder.set_error_selector(Some((field,bit)));
+        //create the tree
+        let tree:FullAdderTree<f64,u64>=FullAdderTree::new(n_inputs);
 
-        neuron.full_adder_tree = Some(full_adder_tree);
+        neuron.full_adder_tree=Some(tree);
+
+       
     }
 }

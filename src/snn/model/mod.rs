@@ -1,8 +1,10 @@
 //! Main `Model` trait for expanding this library to work with other models. Leaky integrate and fire is built in.
-use std::ops::{Add, BitAndAssign, BitOrAssign, Mul, Not};
+use std::ops::{Add, Mul};
 
 
 use std::fmt::Debug;
+
+use self::logic_circuit::Stuck;
 
 
 pub mod lif;
@@ -31,12 +33,12 @@ pub trait ToBits<U> {
     fn get_bits(&self) -> U;
     fn from_bits(bits: U) -> Self;
 
-    fn create_mask(&self, index: i32) -> U; //just to create a mask of bits for different types
+    fn create_mask(&self, index: u64) -> U; //just to create a mask of bits for different types
                                             //generate a bit sequence with all 0's and a 1 in the position specified by index.
                                             //The lenght depends on the type implementing this
 
     // Get the number of bits in the type implementing this trait.
-    fn num_bits(&self) -> i32;
+    fn num_bits(&self) -> u64;
 }
 
 impl ToBits<u64> for f64 {
@@ -48,11 +50,11 @@ impl ToBits<u64> for f64 {
         f64::from_bits(bits)
     }
 
-    fn create_mask(&self, index: i32) -> u64 {
+    fn create_mask(&self, index: u64) -> u64 {
         1u64 << index
     }
 
-    fn num_bits(&self) -> i32 {
+    fn num_bits(&self) -> u64 {
         64 //Modo migliore????
     }
 }
@@ -64,16 +66,16 @@ It is parameterized with two types, T and U. T is the type of the values taht pe
 The error selector is a field to keep track of the selected field( i1,i2,o) and selected bit to apply the error bit injection
 */
 pub trait LogicCircuit<T: Add<Output = T> + Mul<Output = T> + Clone, U> {
-    fn operation(&mut self, stuck: bool) -> T;
-    fn set_random_bit(&mut self,indexes:(i32,i32), stuck: bool);
+    fn operation(&mut self, stuck: Stuck) -> T;
+    fn set_random_bit(&mut self,indexes:(u8,u64), stuck: Stuck);
     fn get_input1(&self) -> T;
     fn set_input1(&mut self, value: T);
     fn get_input2(&self) -> T;
     fn set_input2(&mut self, value: T);
     fn get_output(&self) -> T;
     fn set_output(&mut self, value: T);
-    fn get_error_selector(&self) -> Option<(i32, i32)>;
-    fn set_error_selector(&mut self, value: Option<(i32, i32)>);
+    fn get_error_selector(&self) -> Option<(u8, u64)>;
+    fn set_error_selector(&mut self, value: Option<(u8, u64)>);
 }
 
 
