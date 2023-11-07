@@ -6,7 +6,7 @@ use std::rc::Rc;
 
 use super::{LogicCircuit, ToBits};
 
-#[derive(Clone)]
+#[derive(Clone,Debug)]
 pub enum Stuck {
     Zero,
     One,

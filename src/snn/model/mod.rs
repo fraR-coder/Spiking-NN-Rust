@@ -6,7 +6,7 @@ use std::fmt::Debug;
 
 use self::logic_circuit::Stuck;
 
-
+pub mod heap;
 pub mod lif;
 pub mod logic_circuit;
 
@@ -77,6 +77,10 @@ pub trait LogicCircuit<T: Add<Output = T> + Mul<Output = T> + Clone, U> {
     fn get_error_selector(&self) -> Option<(u8, u64)>;
     fn set_error_selector(&mut self, value: Option<(u8, u64)>);
 }
+
+
+
+
 
 
 
