@@ -1,7 +1,5 @@
 //! Implementation of the Leaky Integrate and Fire (LIF) model for Spiking Neural Networks
 
-
-
 use crate::snn::model::Model;
 
 #[derive(Clone, Debug)]

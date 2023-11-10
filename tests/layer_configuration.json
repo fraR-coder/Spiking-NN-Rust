@@ -1,0 +1,100 @@
+[
+    {
+        "neuron": "1-128",
+        "layer": "1",
+        "v_rest": 2.0, 
+        "v_reset": 0.5, 
+        "v_threshold": 1.1, 
+        "tau": 1.0
+    },
+
+    {
+        "neuron": "",
+        "layer": 0,
+        "v_rest":2.0, 
+        "v_reset": 0.5, 
+        "v_threshold": 2.6, 
+        "tau": 1.0
+    },
+
+    {
+        "neuron": 2,
+        "layer": 0,
+        "v_rest":1.7, 
+        "v_reset": 0.3, 
+        "v_threshold": 3.4, 
+        "tau": 1.0
+    },
+
+    {
+        "neuron": 0,
+        "layer": 1,
+        "v_rest":2.0, 
+        "v_reset": 0.5, 
+        "v_threshold": 1.1, 
+        "tau": 1.0
+    },
+
+    {
+        "neuron": 1,
+        "layer": 1,
+        "v_rest":2.0, 
+        "v_reset": 0.8, 
+        "v_threshold": 4.3, 
+        "tau": 1.0
+    },
+
+    {
+        "neuron": 0,
+        "layer": 2,
+        "v_rest":2.0, 
+        "v_reset": 0.5, 
+        "v_threshold": 1.1, 
+        "tau": 1.0
+    },
+
+    {
+        "neuron": 1,
+        "layer": 2,
+        "v_rest":2.0, 
+        "v_reset": 0.5, 
+        "v_threshold": 1.1, 
+        "tau": 1.0
+    },
+
+    {
+        "neuron": 0,
+        "layer": 3,
+        "v_rest":2.0, 
+        "v_reset": 0.8, 
+        "v_threshold": 4.3, 
+        "tau": 1.0
+    },
+
+    {
+        "neuron": 1,
+        "layer": 3,
+        "v_rest":2.0, 
+        "v_reset": 0.5, 
+        "v_threshold": 1.1, 
+        "tau": 1.0
+    },
+
+    {
+        "neuron": 2,
+        "layer": 3,
+        "v_rest":1.7, 
+        "v_reset": 0.3, 
+        "v_threshold": 3.4, 
+        "tau": 1.0
+    },
+
+    {
+        "neuron": 1,
+        "layer": 3,
+        "v_rest":2.0, 
+        "v_reset": 0.5, 
+        "v_threshold": 2.6, 
+        "tau": 1.0
+    }
+]
