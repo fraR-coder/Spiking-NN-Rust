@@ -1,5 +1,5 @@
-use spiking_nn_resilience::lif::{Configuration, LeakyIntegrateFire, LifNeuron};
-use spiking_nn_resilience::*;
+use crate::snn::model::lif::*;
+use crate::NN;
 
 use serde::Deserialize;
 
