@@ -7,8 +7,8 @@ use spiking_nn_resilience::snn::model::{heap::HeapCalculator, logic_circuit::Stu
 fn test_sum(){
     
     let inputs=vec![1.0,2.0,3.0,1.0,0.0,4.0];
-    //let mut heap_adder:HeapCalculator<f64,u64>=HeapCalculator::new(2*(2 as u32).pow((( inputs.len() as f64).log2().ceil()) as u32) as usize, Stuck::One );
-    let mut heap_adder:HeapCalculator<f64,u64>=HeapCalculator::new( inputs.len(), Stuck::One );
+    let mut heap_adder:HeapCalculator<f64,u64>=HeapCalculator::new(2*(2 as u32).pow((( inputs.len() as f64).log2().ceil()) as u32) as usize, Stuck::One );
+    //let mut heap_adder:HeapCalculator<f64,u64>=HeapCalculator::new( inputs.len(), Stuck::One );
     println!("somma: {}", heap_adder.sum_all(&inputs))
 }
 

@@ -39,6 +39,8 @@ pub trait ToBits<U> {
 
     // Get the number of bits in the type implementing this trait.
     fn num_bits(&self) -> u64;
+
+
 }
 
 impl ToBits<u64> for f64 {
