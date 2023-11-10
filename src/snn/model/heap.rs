@@ -105,7 +105,7 @@ where
 {
     pub fn new(dim: usize, stuck: Stuck) -> Self {
         //dim is the number of elemnts in the input
-        let heap_length = 2 * dim +1 ; 
+        let heap_length = 2 * dim;
         //create a new heap vector filled with Link struct
         let mut heap_vec: Vec<Link<T, U>> = vec![
             Link {
@@ -165,7 +165,8 @@ where
         }
         //usata per muoversi nel vettore e riposizionare l'indice iniziale su cui voglio lavorare
         let mut start: usize = 0;
-        let number_of_levels:usize=(len as f64).log2().ceil() as usize;
+        let number_of_levels:usize=log2(len);
+        println!("number_of_levels: {}", number_of_levels);
 
         //scorro i livelli dell'albero creato dall'heap
         for lv in 0..number_of_levels {
@@ -174,9 +175,10 @@ where
             //per ogni livello itera su un numero di elementi diversi,
             // al lv 0 sono tutti gli elementi di inputs, quindi la prima metà del vettore
             //all'aumentare del livello dimezzo il numero di dati su cui lavoro
-            let lv_dim=((len as f64) / (2 * (2 as u32).pow(lv as u32)) as f64).ceil() as usize;
+            let lv_dim=len>>(lv+1);
+            println!("lv_dim: {}",lv_dim);
 
-            //sommo le deu coppie di valori adiacenti quindi avanzo di due indici alla volta
+            // sommo le due coppie di valori adiacenti quindi avanzo di due indici alla volta
             for i in (0..lv_dim).step_by(2)
             {
                 println!(
@@ -187,8 +189,7 @@ where
                 //somma la coppia di valori
                 let tmp = self.heap_vec[start + i].sum(&self.heap_vec[start + i + 1]);
 
-                self.heap_vec[start + len / (2 * (2 as u32).pow(lv as u32)) as usize + i / 2]
-                    .value = tmp;
+                self.heap_vec[start + (len>>(lv+1)) + i / 2].value = tmp;
             }
             start += lv_dim ;
         }
@@ -204,9 +205,9 @@ where
         }
         let mut start: usize = 0;
 
-        for lv in (0..(len as f64).log2().ceil() as usize) {
+        for lv in 0..log2(len) {
             println!("lv: {}", lv);
-            for i in (0..((len as f64) / (2 * (2 as u32).pow(lv as u32)) as f64).ceil() as usize)
+            for i in (0..len>>(lv+1))
                 .step_by(2)
             {
                 println!(
@@ -215,12 +216,22 @@ where
                     self.heap_vec[start + i + 1].value
                 );
                 let tmp = self.heap_vec[start + i].product(&self.heap_vec[start + i + 1]);
-                self.heap_vec[start + len / (2 * (2 as u32).pow(lv as u32)) as usize + i / 2]
+                self.heap_vec[start + (len>>(lv+1)) + i / 2]
                     .value = tmp;
             }
-            start += ((len as f64) / ((2.0 * (2 as u32).pow(lv as u32) as f64).ceil())) as usize;
+            start += (len>>(lv+1));
         }
         self.heap_vec[len - 2].value.clone()
     }
-    test
+}
+fn log2(len: usize) -> usize {
+    let mut shifts = 0;
+    let mut n = len;
+
+    while n > 1 {
+        n >>= 1; // shift a destra di un bit
+        shifts += 1;
+    }
+
+    shifts
 }
