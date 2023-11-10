@@ -1,7 +1,7 @@
 use std::{
     fmt::Display,
     marker::PhantomData,
-    ops::{Add, BitAndAssign, BitOrAssign, Mul, Not},
+    ops::{Add, BitAndAssign, BitOrAssign, Mul, Not, Shr, BitAnd, BitOr},
 };
 
 use rand::Rng;
@@ -25,7 +25,7 @@ pub struct Link<T: Clone, U> {
 impl<T, U> Link<T, U>
 where
     T: Add<Output = T> + Mul<Output = T> + Clone + ToBits<U> + Default,
-    U: BitOrAssign + Not<Output = U> + BitAndAssign + Clone,
+    U: BitOrAssign+BitAnd<Output = U>+BitOr<Output = U> + Not<Output = U> + BitAndAssign + Shr +Clone+Default+PartialEq,
 {
     pub fn new(value: T, stuck_bit: Option<Stuck>) -> Self {
         //select the random bit to apply injection
@@ -46,7 +46,7 @@ where
             match stuck {
                 Stuck::Zero => bits &= !(self.mask.as_ref().unwrap().clone()),
                 Stuck::One => bits |= self.mask.as_ref().unwrap().clone(),
-                Stuck::Transient => {}
+                Stuck::Transient => {bits=self.invert_bit_at(&bits, link)}
             };
             let new_val = T::from_bits(bits);
             return new_val + link.value.clone();
@@ -58,7 +58,7 @@ where
             match stuck {
                 Stuck::Zero => bits &= !(link.mask.as_ref().unwrap().clone()),
                 Stuck::One => bits |= link.mask.as_ref().unwrap().clone(),
-                Stuck::Transient => {}
+                Stuck::Transient => {bits=self.invert_bit_at(&bits, link)}
             };
             let new_val = T::from_bits(bits);
             return new_val + self.value.clone();
@@ -74,7 +74,7 @@ where
             match stuck {
                 Stuck::Zero => bits &= !(self.mask.as_ref().unwrap().clone()),
                 Stuck::One => bits |= self.mask.as_ref().unwrap().clone(),
-                Stuck::Transient => {}
+                Stuck::Transient => {{bits=self.invert_bit_at(&bits, link)}}
             };
 
             let new_val = T::from_bits(bits);
@@ -88,7 +88,7 @@ where
             match stuck {
                 Stuck::Zero => bits &= !(self.mask.as_ref().unwrap().clone()),
                 Stuck::One => bits |= self.mask.as_ref().unwrap().clone(),
-                Stuck::Transient => {}
+                Stuck::Transient => {{bits=self.invert_bit_at(&bits, link)}}
             };
             let new_val = T::from_bits(bits);
             return new_val * self.value.clone();
@@ -96,12 +96,24 @@ where
 
         self.value.clone() * link.value.clone()
     }
+
+    pub fn invert_bit_at(&self,bits:&U,link:&Link<T, U>)->U{
+        if (bits.clone() & link.mask.as_ref().unwrap().clone() )!= U::default(){
+            bits.clone() & !(link.mask.as_ref().unwrap().clone())
+            
+        }
+        else{
+            bits.clone() | link.mask.as_ref().unwrap().clone()
+        }
+    }
+   
+
 }
 
 impl<T: Display, U: Display> HeapCalculator<T, U>
 where
     T: Add<Output = T> + Mul<Output = T> + Clone + ToBits<U> + Default,
-    U: BitOrAssign + Not<Output = U> + BitAndAssign + Clone,
+    U: BitOrAssign+BitAnd<Output = U>+ Not<Output = U> + BitAndAssign + Shr +Clone+Default+PartialEq+BitOr<Output = U>,
 {
     pub fn new(dim: usize, stuck: Stuck) -> Self {
         //dim is the number of elemnts in the input
@@ -126,36 +138,7 @@ where
         HeapCalculator { heap_vec }
     }
 
-    /*
-    pub fn sum_all(&mut self, inputs: &[T]) -> T {
-    let len = self.heap_vec.len();
-
-    // Inserisci gli elementi di input direttamente nell'heap se possibile.
-    self.heap_vec.extend(inputs.iter().cloned());
-
-    let mut start: usize = 0;
-    let number_of_levels: usize = (len as f64).log2().ceil() as usize;
-
-    for lv in 0..number_of_levels {
-        let lv_dim = (len as f64 / (2.0 * 2_usize.pow(lv as u32) as f64)).ceil() as usize;
-
-        for i in (0..lv_dim).step_by(2) {
-            let left_idx = start + i;
-            let right_idx = start + i + 1;
-            let parent_idx = start + len / (2 * 2_usize.pow(lv as u32)) + i / 2;
-
-            let left_val = self.heap_vec[left_idx].clone();
-            let right_val = self.heap_vec[right_idx].clone();
-            let tmp = left_val.sum(&right_val);
-
-            self.heap_vec[parent_idx] = tmp;
-        }
-        start += lv_dim;
-    }
-
-    self.heap_vec[len - 2].clone()
-}
- */
+   
     pub fn sum_all(&mut self, inputs: &[T]) -> T {
         let len = self.heap_vec.len();
         println!("len: {}", len);
