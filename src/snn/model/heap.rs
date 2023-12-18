@@ -6,7 +6,7 @@ use std::{
 
 use rand::Rng;
 
-use super::{logic_circuit::Stuck, ToBits};
+use super::{Stuck, ToBits};
 
 #[derive(Debug, Clone)]
 pub struct HeapCalculator<T: Clone, U> {
@@ -74,7 +74,7 @@ where
             match stuck {
                 Stuck::Zero => bits &= !(self.mask.as_ref().unwrap().clone()),
                 Stuck::One => bits |= self.mask.as_ref().unwrap().clone(),
-                Stuck::Transient => {{bits=self.invert_bit_at(&bits, link)}}
+                Stuck::Transient => {bits=self.invert_bit_at(&bits, link)}
             };
 
             let new_val = T::from_bits(bits);
@@ -88,7 +88,7 @@ where
             match stuck {
                 Stuck::Zero => bits &= !(self.mask.as_ref().unwrap().clone()),
                 Stuck::One => bits |= self.mask.as_ref().unwrap().clone(),
-                Stuck::Transient => {{bits=self.invert_bit_at(&bits, link)}}
+                Stuck::Transient => {bits=self.invert_bit_at(&bits, link)}
             };
             let new_val = T::from_bits(bits);
             return new_val * self.value.clone();
@@ -169,7 +169,7 @@ where
                     self.heap_vec[start + i].value,
                     self.heap_vec[start + i + 1].value
                 );
-                //somma la coppia di valori
+                //somma la coppia di valori, error logic included in Link sum function
                 let tmp = self.heap_vec[start + i].sum(&self.heap_vec[start + i + 1]);
 
                 self.heap_vec[start + (len>>(lv+1)) + i / 2].value = tmp;

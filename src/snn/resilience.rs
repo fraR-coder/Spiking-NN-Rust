@@ -3,19 +3,21 @@ use crate::NN;
 use rand::Rng;
 use std::sync::{Arc, Mutex};
 
+use super::model::Stuck;
+
 /// The struct that contains the input configuration
 #[derive(Clone)]
 pub struct Resilience {
     /// List of all components
     pub(crate) components: Vec<String>,
     /// Stuck type: 0 for stuck_at_0, 1 for stuck_at_1, 2 for transient_bit.
-    pub(crate) stuck_type: u8,
+    pub(crate) stuck_type: Stuck,
     /// The number of times to do the resilience test
     pub(crate) times: u128,
 }
 
 impl Resilience {
-    pub fn new(components: Vec<String>, stuck_type: u8, times: u128) -> Resilience {
+    pub fn new(components: Vec<String>, stuck_type: Stuck, times: u128) -> Resilience {
         return Resilience {
             components,
             stuck_type,
@@ -29,21 +31,15 @@ impl Resilience {
 
     pub fn execute_resilience_test(
         &self,
-        mut snn: NN<LeakyIntegrateFire>,
+        snn: NN<LeakyIntegrateFire>,
         input: Vec<(u128, Vec<u128>)>,
     ) {
-        let mut stuck: bool = true;
+       
         let mut count_right_outputs: u64 = 0;
         let right_output = snn.clone().solve_multiple_vec_spike(input.clone(), 11);
         println!("{:?}", right_output);
 
-        match self.stuck_type {
-            0 => stuck = false,
-            1 => stuck = true,
-            _ => {
-                println!("Error: wrong stuck type")
-            }
-        }
+      
         for _ in 0..self.times {
             let mut snn_tmp = snn.clone();
             //println!(solution);
@@ -58,7 +54,7 @@ impl Resilience {
                     let rand_neuron_idx = rand::thread_rng()
                         .gen_range(0..snn_tmp.layers[rand_layer_idx].num_neurons());
                     snn_tmp.layers[rand_layer_idx].stuck_bit_neuron(
-                        stuck,
+                        self.stuck_type.clone(),
                         rand_neuron_idx,
                         vec!["v_rest", "v_reset", "v_tau", "v_th"]
                             .get(rand::thread_rng().gen_range(0..4))
@@ -71,7 +67,7 @@ impl Resilience {
                     let rand_neuron_idx = rand::thread_rng()
                         .gen_range(0..snn_tmp.layers[rand_layer_idx].num_neurons());
                     snn_tmp.layers[rand_layer_idx].stuck_bit_neuron(
-                        stuck,
+                        self.stuck_type.clone(),
                         rand_neuron_idx,
                         "full adder".to_string(),
                     )

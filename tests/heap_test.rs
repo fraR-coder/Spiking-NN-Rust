@@ -1,6 +1,5 @@
 
-use nalgebra::DMatrix;
-use spiking_nn_resilience::snn::model::{heap::HeapCalculator, logic_circuit::Stuck};
+use spiking_nn_resilience::snn::model::{heap::HeapCalculator, Stuck};
 
 
 #[test]

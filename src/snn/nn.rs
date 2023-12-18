@@ -126,7 +126,7 @@ impl<M: Model+Clone> NN<M> {
                         let mut sum:f64 = 0.0;
                         let input_spike_tmp = input_spike.clone();
                         for spike in input_spike_tmp.into_iter(){
-                            let neuron=layers[layer_idx].get_neuron(neuron_idx as usize);
+                            //let neuron=layers[layer_idx].get_neuron(neuron_idx as usize);
                             
 
 
@@ -215,7 +215,7 @@ impl<M: Model+Clone> NN<M> {
             };
             let rx = channel_rx.remove(0);
             let mut layers = self.layers.clone();
-            let thread_name=format!("layer_{}", layer_idx);
+            let _thread_name=format!("layer_{}", layer_idx);
             let output_clone = shared_output.clone();
             let handle = thread:://Builder::new()
             /*.name(thread_name) // Imposta il nome del thread*/

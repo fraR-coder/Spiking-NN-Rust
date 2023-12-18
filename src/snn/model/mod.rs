@@ -4,11 +4,11 @@ use std::ops::{Add, Mul};
 
 use std::fmt::Debug;
 
-use self::logic_circuit::Stuck;
+
 
 pub mod heap;
 pub mod lif;
-pub mod logic_circuit;
+
 
 pub trait Model {
 
@@ -18,15 +18,21 @@ pub trait Model {
     fn handle_spike(neuron: &mut Self::Neuron, weighted_input_val: f64, ts: u128) -> f64;
     fn update_v_mem(neuron: &mut Self::Neuron, val: f64);
 
-    fn update_v_rest(neuron: &mut Self::Neuron, stuck: bool);
-    fn update_v_reset(neuron: &mut Self::Neuron, stuck: bool);
-    fn update_v_th(neuron: &mut Self::Neuron, stuck: bool);
-    fn update_tau(neuron: &mut Self::Neuron, stuck: bool);
+    fn update_v_rest(neuron: &mut Self::Neuron, stuck: Stuck);
+    fn update_v_reset(neuron: &mut Self::Neuron, stuck: Stuck);
+    fn update_v_th(neuron: &mut Self::Neuron, stuck: Stuck);
+    fn update_tau(neuron: &mut Self::Neuron, stuck: Stuck);
 
-    fn use_full_adder(neuron: &mut Self::Neuron,stuck: bool,n_inputs: usize);
+    fn use_full_adder(neuron: &mut Self::Neuron,stuck: Stuck,n_inputs: usize);
 
 }
 
+#[derive(Debug,Clone)]
+pub enum Stuck {
+    Zero,
+    One,
+    Transient,
+}
 
 // Define the ToBits trait
 pub trait ToBits<U> {
@@ -59,25 +65,6 @@ impl ToBits<u64> for f64 {
     fn num_bits(&self) -> u64 {
         64 //Modo migliore????
     }
-}
-//**TODO can be implemented for all the types we need */
-/*
-The LogicCircuit trait represents a generic logic circuit that performs operations and provides methods
-for setting and getting inputs, outputs, and error selectors.
-It is parameterized with two types, T and U. T is the type of the values taht perform the operations. U is the type of the rappresentation in bit of T (e.g. T:f64->U:u64)
-The error selector is a field to keep track of the selected field( i1,i2,o) and selected bit to apply the error bit injection
-*/
-pub trait LogicCircuit<T: Add<Output = T> + Mul<Output = T> + Clone, U> {
-    fn operation(&mut self, stuck: Stuck) -> T;
-    fn set_random_bit(&mut self,indexes:(u8,u64), stuck: Stuck);
-    fn get_input1(&self) -> T;
-    fn set_input1(&mut self, value: T);
-    fn get_input2(&self) -> T;
-    fn set_input2(&mut self, value: T);
-    fn get_output(&self) -> T;
-    fn set_output(&mut self, value: T);
-    fn get_error_selector(&self) -> Option<(u8, u64)>;
-    fn set_error_selector(&mut self, value: Option<(u8, u64)>);
 }
 
 

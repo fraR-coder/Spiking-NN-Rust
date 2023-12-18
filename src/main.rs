@@ -1,6 +1,6 @@
 pub mod snn;
 
-use crate::snn::model::{lif::*, Model};
+use crate::snn::model::{Model, Stuck};
 use crate::snn::resilience::Resilience;
 use nalgebra::{DMatrix, DVector};
 
@@ -99,7 +99,7 @@ fn main() {
     //matrix_mul();
 
     //nn.solve_single_thread(input);
-    let configuration: Resilience = Resilience::new(vec!["Neurons".to_string(), "Input Links".to_string()], 0, 5);
+    let configuration: Resilience = Resilience::new(vec!["Neurons".to_string(), "Input Links".to_string()], Stuck::Zero, 5);
     println!("Il componente scelto è: {}", configuration.get_rand_component());
     //test_solve(nn,input);
 

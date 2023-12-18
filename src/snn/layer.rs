@@ -3,7 +3,9 @@ extern crate nalgebra as na;
 use crate::Model;
 use na::{DMatrix};
 use nalgebra::DVector;
-use crate::snn::Spike;  //guarda metodi from_fn e from_vec
+use crate::snn::Spike;
+
+use super::model::Stuck;  //guarda metodi from_fn e from_vec
 
 /// A single layer in the neural network
 ///
@@ -88,7 +90,7 @@ impl<M: Model + Clone+'static> Layer<M> {
 
             }
         }
-    pub fn stuck_bit_neuron(&mut self, stuck: bool, neuron_id: usize, neuron_data: String ) {
+    pub fn stuck_bit_neuron(&mut self, stuck: Stuck, neuron_id: usize, neuron_data: String ) {
         
 
         match neuron_data.as_str() {

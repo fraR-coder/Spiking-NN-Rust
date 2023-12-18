@@ -2,11 +2,10 @@
 
 use crate::snn::model::Model;
 use rand::Rng;
+
 use std::f64;
 
-use super::{logic_circuit::{FullAdderTree, Multiplier}};
-
-
+use super::Stuck;
 
 #[derive(Clone, Debug)]
 pub struct LifNeuron {
@@ -21,9 +20,6 @@ pub struct LifNeuron {
 
     pub v_mem: f64,
     pub ts_old: u128,
-
-    pub full_adder_tree: Option<FullAdderTree<f64,u64>>,
-    pub multiplier: Multiplier<f64>,
 }
 /// A struct used to create a specific configuration, simply reusable for other neurons
 
@@ -47,9 +43,6 @@ impl LifNeuron {
             tau,
             v_mem: 0.0, //inizialmente a 0?
             ts_old: 0,
-
-            full_adder_tree: None,
-            multiplier: Multiplier::new(),
         }
     }
 
@@ -140,64 +133,61 @@ impl Model for LeakyIntegrateFire {
         }
     }
 
-    fn update_v_rest(neuron: &mut Self::Neuron, stuck: bool) {
+    fn update_v_rest(neuron: &mut Self::Neuron, stuck: Stuck) {
         let mut bits: u64 = neuron.v_rest.to_bits();
         //println!("vecchi bit: {}",bits);
         let random_bit_index = rand::thread_rng().gen_range(0..64);
-        if stuck {
-            // if stuck_at_bit_1
-            bits |= 1u64 << random_bit_index;
-        } else {
-            bits &= !(1u64 << random_bit_index);
-        }
+        match stuck {
+            Stuck::Zero => bits &= !(1u64 << random_bit_index),
+            Stuck::One => bits |= 1u64 << random_bit_index,
+            Stuck::Transient => () //bits = self.invert_bit_at(&bits, link),
+        };
         //println!("update_v_rest: {}",random_bit_index);
         //println!("nuovi bit: {}",bits);
         neuron.v_rest = f64::from_bits(bits);
     }
 
-    fn update_v_reset(neuron: &mut Self::Neuron, stuck: bool) {
+    fn update_v_reset(neuron: &mut Self::Neuron, stuck: Stuck) {
         let mut bits: u64 = neuron.v_reset.to_bits();
         let random_bit_index = rand::thread_rng().gen_range(0..64);
-        if stuck {
-            // if stuck_at_bit_1
-            bits |= 1u64 << random_bit_index;
-        } else {
-            bits &= !(1u64 << random_bit_index);
-        }
+        match stuck {
+            Stuck::Zero => bits &= !(1u64 << random_bit_index),
+            Stuck::One => bits |= 1u64 << random_bit_index,
+            Stuck::Transient => () //bits = self.invert_bit_at(&bits, link),
+        };
         neuron.v_reset = f64::from_bits(bits);
     }
 
-    fn update_v_th(neuron: &mut Self::Neuron, stuck: bool) {
+    fn update_v_th(neuron: &mut Self::Neuron, stuck: Stuck) {
         let mut bits: u64 = neuron.v_th.to_bits();
         let random_bit_index = rand::thread_rng().gen_range(0..64);
-        if stuck {
-            // if stuck_at_bit_1
-            bits |= 1u64 << random_bit_index;
-        } else {
-            bits &= !(1u64 << random_bit_index);
-        }
+        match stuck {
+            Stuck::Zero => bits &= !(1u64 << random_bit_index),
+            Stuck::One => bits |= 1u64 << random_bit_index,
+            Stuck::Transient => () //bits = self.invert_bit_at(&bits, link),
+        };
+
         neuron.v_th = f64::from_bits(bits);
     }
 
-    fn update_tau(neuron: &mut Self::Neuron, stuck: bool) {
+    fn update_tau(neuron: &mut Self::Neuron, stuck: Stuck) {
         let mut bits: u64 = neuron.tau.to_bits();
         let random_bit_index = rand::thread_rng().gen_range(0..64);
-        if stuck {
-            // if stuck_at_bit_1
-            bits |= 1u64 << random_bit_index;
-        } else {
-            bits &= !(1u64 << random_bit_index);
-        }
+        match stuck {
+            Stuck::Zero => bits &= !(1u64 << random_bit_index),
+            Stuck::One => bits |= 1u64 << random_bit_index,
+            Stuck::Transient => () //bits = self.invert_bit_at(&bits, link),
+        };
         neuron.tau = f64::from_bits(bits);
     }
 
-    fn use_full_adder(neuron: &mut Self::Neuron, stuck: bool, n_inputs: usize) {
-        
+    fn use_full_adder(neuron: &mut Self::Neuron, stuck: Stuck, n_inputs: usize) {
+
         //create the tree
-        let tree:FullAdderTree<f64,u64>=FullAdderTree::new(n_inputs);
+        //let tree:FullAdderTree<f64,u64>=FullAdderTree::new(n_inputs);
 
-        neuron.full_adder_tree=Some(tree);
-
-       
+        //       let heap=HeapCalculator
     }
 }
+
+
