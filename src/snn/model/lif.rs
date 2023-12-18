@@ -5,7 +5,7 @@ use rand::Rng;
 
 use std::f64;
 
-use super::Stuck;
+use super::{Stuck, heap::HeapCalculator};
 
 #[derive(Clone, Debug)]
 pub struct LifNeuron {
@@ -20,6 +20,8 @@ pub struct LifNeuron {
 
     pub v_mem: f64,
     pub ts_old: u128,
+
+    pub heap_tree: Option<HeapCalculator<f64, u64>>,
 }
 /// A struct used to create a specific configuration, simply reusable for other neurons
 
@@ -43,6 +45,8 @@ impl LifNeuron {
             tau,
             v_mem: 0.0, //inizialmente a 0?
             ts_old: 0,
+
+            heap_tree: None,
         }
     }
 
@@ -134,13 +138,13 @@ impl Model for LeakyIntegrateFire {
     }
 
     fn update_v_rest(neuron: &mut Self::Neuron, stuck: Stuck) {
-        let mut bits: u64 = neuron.v_rest.to_bits();
+        let mut bits = neuron.v_rest.to_bits();
         //println!("vecchi bit: {}",bits);
         let random_bit_index = rand::thread_rng().gen_range(0..64);
         match stuck {
             Stuck::Zero => bits &= !(1u64 << random_bit_index),
             Stuck::One => bits |= 1u64 << random_bit_index,
-            Stuck::Transient => () //bits = self.invert_bit_at(&bits, link),
+            Stuck::Transient => bits ^= 1u64 << random_bit_index,
         };
         //println!("update_v_rest: {}",random_bit_index);
         //println!("nuovi bit: {}",bits);
@@ -153,7 +157,7 @@ impl Model for LeakyIntegrateFire {
         match stuck {
             Stuck::Zero => bits &= !(1u64 << random_bit_index),
             Stuck::One => bits |= 1u64 << random_bit_index,
-            Stuck::Transient => () //bits = self.invert_bit_at(&bits, link),
+            Stuck::Transient => bits ^= 1u64 << random_bit_index,
         };
         neuron.v_reset = f64::from_bits(bits);
     }
@@ -164,7 +168,7 @@ impl Model for LeakyIntegrateFire {
         match stuck {
             Stuck::Zero => bits &= !(1u64 << random_bit_index),
             Stuck::One => bits |= 1u64 << random_bit_index,
-            Stuck::Transient => () //bits = self.invert_bit_at(&bits, link),
+            Stuck::Transient => bits ^= 1u64 << random_bit_index,
         };
 
         neuron.v_th = f64::from_bits(bits);
@@ -176,18 +180,15 @@ impl Model for LeakyIntegrateFire {
         match stuck {
             Stuck::Zero => bits &= !(1u64 << random_bit_index),
             Stuck::One => bits |= 1u64 << random_bit_index,
-            Stuck::Transient => () //bits = self.invert_bit_at(&bits, link),
+            Stuck::Transient => bits ^= 1u64 << random_bit_index,
         };
         neuron.tau = f64::from_bits(bits);
     }
 
-    fn use_full_adder(neuron: &mut Self::Neuron, stuck: Stuck, n_inputs: usize) {
-
-        //create the tree
-        //let tree:FullAdderTree<f64,u64>=FullAdderTree::new(n_inputs);
-
-        //       let heap=HeapCalculator
+    fn use_heap(neuron: &mut Self::Neuron, stuck: Stuck, inputs: Vec<f64>) {
+        let dim =(2u32).pow((( inputs.len() as f64).log2().ceil()) as u32) as usize;
+        let heap_calculator=HeapCalculator::new(dim, stuck);
+        neuron.heap_tree=Some(heap_calculator);
+        
     }
 }
-
-

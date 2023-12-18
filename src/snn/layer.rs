@@ -110,10 +110,11 @@ impl<M: Model + Clone+'static> Layer<M> {
 
             //logic for full adder
             "full adder"=>{
-                //find the number of inputs for the specified neuron to build the fulladder tree
-                //bruttissimo non so se funziona
-                let n_inputs=self.input_weights.row(neuron_id).iter().filter(|&x| *x!=0.0).count();
-                M::use_full_adder(self.get_neuron_mut(neuron_id).unwrap(), stuck,n_inputs);
+                
+                let inputs:Vec<f64>=self.input_weights.row(neuron_id).iter().cloned().collect();
+
+                println!("number of inputs for neuron is {}", inputs.len());
+                M::use_heap(self.get_neuron_mut(neuron_id).unwrap(), stuck,inputs);
             }
 
 

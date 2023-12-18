@@ -264,6 +264,12 @@ impl<M: Model+Clone> NN<M> {
                             s=input_spike_tmp.clone().get(0).unwrap().ts;
                         }
                         for spike in input_spike_tmp.into_iter(){
+                            
+                            let neuron=layers[layer_idx].get_neuron(neuron_idx as usize).unwrap();
+                            //let heap_calculator=neuron.heap_calculator;
+
+                            //get &[T] of value to sum
+                            //call sum_all if needed
                             sum += 1.0*layers[layer_idx].input_weights[(spike.neuron_id, neuron_idx as usize)]; // da reimplementare in una funzione a parte con gli stuck
                         }
                         let res = M::handle_spike(layers[layer_idx].get_neuron_mut(neuron_idx as usize).unwrap(),sum, s);
