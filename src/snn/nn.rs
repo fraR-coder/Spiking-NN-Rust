@@ -1,32 +1,27 @@
-
-use crate::Model;
 use crate::snn::layer::Layer;
-use nalgebra::{DMatrix, DVector};
-use std::sync::{Arc, mpsc, Mutex};
+use crate::Model;
+use nalgebra::{DMatrix, DVector, Dyn, Matrix, Matrix1, VecStorage};
+use std::sync::{mpsc, Arc, Mutex};
 use std::thread;
 
 use super::Spike;
 
-
 #[derive(Clone)]
-pub struct NN<M: Model+Clone+'static> {
+pub struct NN<M: Model + Clone + 'static> {
     /// All the sorted layers of the neural network
-    pub layers: Vec<Layer<M>>
+    pub layers: Vec<Layer<M>>,
 }
 
-impl<M: Model+Clone> NN<M> {
+impl<M: Model + Clone> NN<M> {
     pub fn new() -> Self {
-        Self {
-            layers: Vec::new(),
-        }
+        Self { layers: Vec::new() }
     }
     pub fn layer(
         mut self,
         neurons: Vec<M::Neuron>,
         input_weights: DMatrix<f64>,
         intra_weights: DMatrix<f64>,
-    ) -> Result<Self, String>
-    {
+    ) -> Result<Self, String> {
         let len_last_layer = self.layers.last().map(|l| l.neurons.len()).unwrap_or(0);
         let n = neurons.len();
 
@@ -36,13 +31,17 @@ impl<M: Model+Clone> NN<M> {
         }
 
         // Check size compatibilities
-        if intra_weights.len() != n*n {
+        if intra_weights.len() != n * n {
             return Err("Incompatible intra weight matrix".to_string());
         }
 
-        if input_weights.len() != (
-            if len_last_layer == 0 { n*n } else { len_last_layer * n }
-        ) {
+        if input_weights.len()
+            != (if len_last_layer == 0 {
+                n * n
+            } else {
+                len_last_layer * n
+            })
+        {
             return Err("Incompatible input weight matrix".to_string());
         }
 
@@ -50,23 +49,23 @@ impl<M: Model+Clone> NN<M> {
         let new_layer = Layer {
             neurons,
             input_weights,
-            intra_weights
+            intra_weights,
         };
         self.layers.push(new_layer);
 
         Ok(self)
     }
-    pub fn get_num_layers(&self) -> usize{
-        return self.layers.len()
+    pub fn get_num_layers(&self) -> usize {
+        return self.layers.len();
     }
     /*
-        Ho un vettore di spike iniziali.
-        Inizialmente si crea il primo thread responsabile di gestire il primo vettore di spike e quindi il primo
-        layer. Successivamente si crea il secondo thread e poi il terzo ecc.
-        Quando ha finito la computazione, ciascun thread invia il vettore di spike che ha generato il suo layer al thread
-        che si occupa del livello successivo. Quando l'ultimo spike di input è stato inviato e usato,
-        i thread si eliminano uno ad uno.
-     */
+       Ho un vettore di spike iniziali.
+       Inizialmente si crea il primo thread responsabile di gestire il primo vettore di spike e quindi il primo
+       layer. Successivamente si crea il secondo thread e poi il terzo ecc.
+       Quando ha finito la computazione, ciascun thread invia il vettore di spike che ha generato il suo layer al thread
+       che si occupa del livello successivo. Quando l'ultimo spike di input è stato inviato e usato,
+       i thread si eliminano uno ad uno.
+    */
     // inizialmente la funzione riceve un vettore ordinato di u128 (ovvero istanti di tempo in cui si applica
     // lo spike al primo layer. Successivamente si potrebbe cambiare implementazione...
     /// Solves the SNN given a single vector of spikes -> (Vec<u128<).
@@ -74,8 +73,9 @@ impl<M: Model+Clone> NN<M> {
     /// of them have a global visibility of the input
     pub fn solve_single_vec_spike(&mut self, input: Vec<u128>) {
         println!("Enter solve");
-        let mut index_input: usize=0;
-        let duration =  match input.last().clone() {  //why cloning
+        let mut index_input: usize = 0;
+        let duration = match input.last().clone() {
+            //why cloning
             Some(value) => value.clone(),
             None => 0,
         };
@@ -85,9 +85,9 @@ impl<M: Model+Clone> NN<M> {
         let mut channel_rx = vec![];
         let (mut first_tx, _) = mpsc::channel();
         for i in 0..num_layers {
-            let (tx, rx):(mpsc::Sender<Vec<Spike>>, mpsc::Receiver<Vec<Spike>>) = mpsc::channel();
-            if i==0{
-                first_tx=tx.clone();
+            let (tx, rx): (mpsc::Sender<Vec<Spike>>, mpsc::Receiver<Vec<Spike>>) = mpsc::channel();
+            if i == 0 {
+                first_tx = tx.clone();
             }
             channel_tx.push(tx);
             channel_rx.push(rx);
@@ -103,52 +103,57 @@ impl<M: Model+Clone> NN<M> {
             };
             let rx = channel_rx.remove(0);
             let mut layers = self.layers.clone();
-            let thread_name=format!("layer_{}", layer_idx);
+            let thread_name = format!("layer_{}", layer_idx);
             let handle = thread:://Builder::new()
                 /*.name(thread_name) // Imposta il nome del thread*/
                 spawn(move || {
                 // il vettore di spike da passare al thread successivo
                 let mut layer_output: Vec<Spike> = vec![]; // Output del layer (Spike generati)
 
-                for ts in layer_idx as u128..duration+layer_idx as u128 {
+                for ts in layer_idx as u128..duration + layer_idx as u128 {
                     // Ricezione degli spike dal layer precedente
                     let input_spike = match rx.recv() {
-                        Ok(input_spike) => {
-                            input_spike
-                        }
+                        Ok(input_spike) => input_spike,
                         Err(_err) => {
-                            println!("Error receiving the vector of spikes, layer: {}",layer_idx);
+                            println!("Error receiving the vector of spikes, layer: {}", layer_idx);
                             vec![]
                         }
                     };
                     // eseguo i calcoli per aggiornare le tensioni di membrana e riempio il layer_output di spike
-                    for neuron_idx in 0..layers[layer_idx].num_neurons() as u128{
-                        let mut sum:f64 = 0.0;
+                    for neuron_idx in 0..layers[layer_idx].num_neurons() as u128 {
+                        let mut sum: f64 = 0.0;
                         let input_spike_tmp = input_spike.clone();
-                        for spike in input_spike_tmp.into_iter(){
+                        for spike in input_spike_tmp.into_iter() {
                             //let neuron=layers[layer_idx].get_neuron(neuron_idx as usize);
-                            
-
 
                             //sum_whith_injection(neuron_idx,layers[layer_idx],spike);
-                            sum += 1.0*layers[layer_idx].input_weights[[neuron_idx as usize][spike.neuron_id]]; // da reimplementare in una funzione a parte con gli stuck
+                            sum += 1.0
+                                * layers[layer_idx].input_weights
+                                    [[neuron_idx as usize][spike.neuron_id]]; // da reimplementare in una funzione a parte con gli stuck
                         }
-                        let res = M::handle_spike(layers[layer_idx].get_neuron_mut(neuron_idx as usize).unwrap(),sum, ts);
-                        if res==1. {
-                            layer_output.push(Spike::new(ts,layer_idx,neuron_idx as usize))
+                        let res = M::handle_spike(
+                            layers[layer_idx]
+                                .get_neuron_mut(neuron_idx as usize)
+                                .unwrap(),
+                            sum,
+                            ts,
+                        );
+                        if res == 1. {
+                            layer_output.push(Spike::new(ts, layer_idx, neuron_idx as usize))
                         }
                     }
 
                     // Invio dei nuovi spike al layer successivo (se presente)
                     if let Some(next_tx) = &next_tx {
-                        next_tx.send(layer_output.clone()).expect("Error sending the vector of spikes");
+                        next_tx
+                            .send(layer_output.clone())
+                            .expect("Error sending the vector of spikes");
                     } else {
-                        for s in layer_output.iter(){
-                            println!("Output: {} (thread: {})",s.clone(),thread_name);
+                        for s in layer_output.iter() {
+                            println!("Output: {} (thread: {})", s.clone(), thread_name);
                         }
                     }
-                    layer_output=vec![];
-
+                    layer_output = vec![];
                 } // end for
 
                 // Salvataggio degli spike generati dal layer nell'array
@@ -158,20 +163,24 @@ impl<M: Model+Clone> NN<M> {
 
             handles.push(handle);
         }
-        for ts in 0..duration{
-            let spike = match input.get(index_input){
+        for ts in 0..duration {
+            let spike = match input.get(index_input) {
                 Some(value) => value.clone(),
                 None => 0,
             };
-            index_input+=1;
-            for _ in ts..spike{
-                first_tx.send(vec![]).expect("Error sending the vector of spikes");
+            index_input += 1;
+            for _ in ts..spike {
+                first_tx
+                    .send(vec![])
+                    .expect("Error sending the vector of spikes");
             }
             let mut vec_of_spikes = vec![];
-            for _ in 0..self.layers[0].num_neurons(){
-                vec_of_spikes.push(Spike::new(spike,0,0));
+            for _ in 0..self.layers[0].num_neurons() {
+                vec_of_spikes.push(Spike::new(spike, 0, 0));
             }
-            first_tx.send(vec_of_spikes).expect("Error sending the vector of spikes");
+            first_tx
+                .send(vec_of_spikes)
+                .expect("Error sending the vector of spikes");
         }
 
         // Attendo il completamento di tutti i thread
@@ -182,13 +191,17 @@ impl<M: Model+Clone> NN<M> {
     /// Solves the SNN given a vector of Tuple (neuron_id, vectors of spikes) -> (Vec<(u128,Vec<u128>)>).
     /// Each spike is referred to a single input neuron.
     /// In this way neurons have a reduced visibility if the input.
-    pub fn solve_multiple_vec_spike(&mut self, input: Vec<(u128, Vec<u128>)>, duration: usize) -> Arc<Mutex<Vec<(u128, Vec<u128>)>>> {
+    pub fn solve_multiple_vec_spike(
+        &mut self,
+        input: Vec<(u128, Vec<u128>)>,
+        duration: usize,
+    ) -> Arc<Mutex<Vec<(u128, Vec<u128>)>>> {
         //println!("Enter solve multiple vec spike");
-        let mut index_input: usize=0;
+        let mut index_input: usize = 0;
         // creo tanti canali quanti sono i layer
         let num_layers = self.get_num_layers();
         let shared_output = Arc::new(Mutex::new(Vec::<(u128, Vec<u128>)>::new()));
-        for i in 0..self.layers.last().unwrap().num_neurons(){
+        for i in 0..self.layers.last().unwrap().num_neurons() {
             shared_output.lock().unwrap().push((i as u128, vec![]));
         }
 
@@ -197,9 +210,9 @@ impl<M: Model+Clone> NN<M> {
         let mut channel_rx = vec![];
         let (mut first_tx, _) = mpsc::channel();
         for i in 0..num_layers {
-            let (tx, rx):(mpsc::Sender<Vec<Spike>>, mpsc::Receiver<Vec<Spike>>) = mpsc::channel();
-            if i==0{
-                first_tx=tx.clone();
+            let (tx, rx): (mpsc::Sender<Vec<Spike>>, mpsc::Receiver<Vec<Spike>>) = mpsc::channel();
+            if i == 0 {
+                first_tx = tx.clone();
             }
             channel_tx.push(tx);
             channel_rx.push(rx);
@@ -215,34 +228,34 @@ impl<M: Model+Clone> NN<M> {
             };
             let rx = channel_rx.remove(0);
             let mut layers = self.layers.clone();
-            let _thread_name=format!("layer_{}", layer_idx);
+            let _thread_name = format!("layer_{}", layer_idx);
             let output_clone = shared_output.clone();
             let handle = thread:://Builder::new()
             /*.name(thread_name) // Imposta il nome del thread*/
             spawn(move || {
                 // il vettore di spike da passare al thread successivo
                 let mut layer_output: Vec<Spike> = vec![]; // Output del layer (Spike generati)
-                let mut ts:u128= 0;
-                let mut counter:u128 = 0;
+                let mut ts: u128 = 0;
+                let mut counter: u128 = 0;
                 let mut neuron_counters: Vec<u128> = vec![];
-                for _ in 0..layers[layer_idx].num_neurons(){
+                for _ in 0..layers[layer_idx].num_neurons() {
                     neuron_counters.push(0);
                 }
-                while ts <= duration as u128 + layer_idx as u128{
+                while ts <= duration as u128 + layer_idx as u128 {
                     // Ricezione degli spike dal layer precedente
                     let input_spike = match rx.recv() {
-                        Ok(input_spike) => {
-                            input_spike
-                        }
+                        Ok(input_spike) => input_spike,
                         Err(_err) => {
-                            println!("Error receiving the vector of spikes, layer: {}",layer_idx);
+                            println!("Error receiving the vector of spikes, layer: {}", layer_idx);
                             vec![]
                         }
                     };
 
                     if input_spike.is_empty() {
                         if let Some(next_tx) = &next_tx {
-                            next_tx.send(vec![]).expect("Error sending the vector of spikes");
+                            next_tx
+                                .send(vec![])
+                                .expect("Error sending the vector of spikes");
                             break;
                         } else {
                             //println!("counter: {}",counter);
@@ -251,52 +264,69 @@ impl<M: Model+Clone> NN<M> {
                             break;
                         }
                     }
+
                     //println!("input_spikes: {:?} (Thread: {})",input_spike,thread_name);
                     //println!("input ts: {}, layer_idx: {}",input_spike[0].ts.clone(), layer_idx.clone());
                     //ts=input_spike[0].ts-layer_idx as u128;
                     //println!("Receive vec: {:?}",input_spike);
                     // eseguo i calcoli per aggiornare le tensioni di membrana e riempio il layer_output di spike
-                    for neuron_idx in 0 .. layers[layer_idx].num_neurons() as u128{
-                        let mut sum:f64 = 0.0;
+                    for neuron_idx in 0..layers[layer_idx].num_neurons() as u128 {
+                        let mut sum: f64 = 0.0;
                         let input_spike_tmp = input_spike.clone();
-                        let mut s=0;
-                        if !input_spike_tmp.is_empty(){
-                            s=input_spike_tmp.clone().get(0).unwrap().ts;
-                        }
-                        for spike in input_spike_tmp.into_iter(){
-                            
-                            let neuron=layers[layer_idx].get_neuron(neuron_idx as usize).unwrap();
-                            //let heap_calculator=neuron.heap_calculator;
+                        let mut s = 0;
+                        if !input_spike_tmp.is_empty() {
+                            s = input_spike_tmp.clone().get(0).unwrap().ts;
+                        } 
+                        
+                        //do the sum considering the possible errors
+                        sum = Self::calculate_sum(input_spike_tmp, &layers[layer_idx], neuron_idx);
 
-                            //get &[T] of value to sum
-                            //call sum_all if needed
+                        /*for spike in input_spike_tmp.into_iter(){
                             sum += 1.0*layers[layer_idx].input_weights[(spike.neuron_id, neuron_idx as usize)]; // da reimplementare in una funzione a parte con gli stuck
                         }
-                        let res = M::handle_spike(layers[layer_idx].get_neuron_mut(neuron_idx as usize).unwrap(),sum, s);
-                        if res==1.0 {
-                            layer_output.push(Spike::new(input_spike[0].ts+1,layer_idx,neuron_idx as usize))
+                        */
+                        let res = M::handle_spike(
+                            layers[layer_idx]
+                                .get_neuron_mut(neuron_idx as usize)
+                                .unwrap(),
+                            sum,
+                            s,
+                        );
+                        if res == 1.0 {
+                            layer_output.push(Spike::new(
+                                input_spike[0].ts + 1,
+                                layer_idx,
+                                neuron_idx as usize,
+                            ))
                         }
                     }
 
                     // Invio dei nuovi spike al layer successivo (se presente)
                     if let Some(next_tx) = &next_tx {
-                        if !layer_output.is_empty(){
+                        if !layer_output.is_empty() {
                             //println!("vec in output: {:?} sent from thread:{}",layer_output.clone(),thread_name);
-                            next_tx.send(layer_output.clone()).expect("Error sending the vector of spikes");
+                            next_tx
+                                .send(layer_output.clone())
+                                .expect("Error sending the vector of spikes");
                             layers[layer_idx].update_layer_ciclo(&layer_output);
                         }
                     } else {
-                        for s in layer_output.iter(){
-                            if let Some((_, v)) = output_clone.lock().unwrap().iter_mut().find(|(k, _)| *k == s.neuron_id as u128) {
+                        for s in layer_output.iter() {
+                            if let Some((_, v)) = output_clone
+                                .lock()
+                                .unwrap()
+                                .iter_mut()
+                                .find(|(k, _)| *k == s.neuron_id as u128)
+                            {
                                 v.push(s.ts);
                             }
                             //println!("final Output: {} (thread: {})",s.clone(),thread_name);
-                            counter+=1;
-                            neuron_counters[s.neuron_id]+=1;
+                            counter += 1;
+                            neuron_counters[s.neuron_id] += 1;
                         }
                     }
-                    layer_output=vec![];
-                    ts+=1;
+                    layer_output = vec![];
+                    ts += 1;
                 } // end while
 
                 // Salvataggio degli spike generati dal layer nell'array
@@ -305,22 +335,22 @@ impl<M: Model+Clone> NN<M> {
             });
             handles.push(handle);
         }
-        let input_spikes=Spike::vec_of_all_spikes(input);
-        let mut ts:usize = 0;
-        while ts <= duration{
-            let spike = match input_spikes.get(index_input){
+        let input_spikes = Spike::vec_of_all_spikes(input);
+        let mut ts: usize = 0;
+        while ts <= duration {
+            let spike = match input_spikes.get(index_input) {
                 Some(value) => value.clone(),
-                None => Spike::new(0,0,0),
+                None => Spike::new(0, 0, 0),
             };
-            ts=spike.ts as usize;
+            ts = spike.ts as usize;
             let mut vec_of_spikes = vec![];
-           // println!("input spikes to starting: {:?}",input_spikes);
-            for _ in 0 .. self.layers[0].num_neurons(){
-                let s = match input_spikes.get(index_input){
+            // println!("input spikes to starting: {:?}",input_spikes);
+            for _ in 0..self.layers[0].num_neurons() {
+                let s = match input_spikes.get(index_input) {
                     Some(value) => value.clone(),
-                    None => Spike::new(0,0,0),
+                    None => Spike::new(0, 0, 0),
                 };
-                if  s.ts== spike.ts {
+                if s.ts == spike.ts {
                     vec_of_spikes.push(s);
                     index_input += 1;
                     //println!("Emit spike: {}",spike);
@@ -328,11 +358,15 @@ impl<M: Model+Clone> NN<M> {
                     break;
                 }
             }
-            first_tx.send(vec_of_spikes.clone()).expect("Error sending the vector of spikes");
+            first_tx
+                .send(vec_of_spikes.clone())
+                .expect("Error sending the vector of spikes");
             //println!("Sent vec: {:?} to T0",vec_of_spikes);
-            ts+=1;
+            ts += 1;
         }
-        first_tx.send(vec![]).expect("Error sending the vector of spikes");
+        first_tx
+            .send(vec![])
+            .expect("Error sending the vector of spikes");
 
         // Attendo il completamento di tutti i thread
         for handle in handles {
@@ -341,130 +375,131 @@ impl<M: Model+Clone> NN<M> {
         return shared_output;
     }
 
+    pub fn calculate_sum(input_spike_tmp: Vec<Spike>, layer: &Layer<M>, neuron_idx: u128) -> f64 {
+        let neuron = layer.get_neuron(neuron_idx as usize).unwrap();
 
-    pub fn sum_whith_injection(neuron_idx:usize,layer:Layer<M>,spike:Spike){
+        let inputs_to_sum: Vec<f64> = input_spike_tmp
+            .into_iter()
+            .map(|spike| layer.input_weights[(spike.neuron_id, neuron_idx as usize)])
+            .collect();
 
-       
-
+        if let Some(mut heap_vec) = M::get_heap(neuron) {
+            heap_vec.sum_all(&inputs_to_sum)
+        } else {
+            inputs_to_sum.iter().sum()
+        }
     }
+
+    //che è questa??????
+    pub fn sum_whith_injection(neuron_idx: usize, layer: Layer<M>, spike: Spike) {}
     /*
-    pub fn solve(&mut self, input: Vec<Vec<u8>>, duration: u128) {
-        for t in 0..duration {
-            // Simulate each time step
-            for (layer_idx, layer) in self.layers.iter_mut().enumerate() {
-                let mut spike_vec: Vec<Spike> = Vec::new();
+        pub fn solve(&mut self, input: Vec<Vec<u8>>, duration: u128) {
+            for t in 0..duration {
+                // Simulate each time step
+                for (layer_idx, layer) in self.layers.iter_mut().enumerate() {
+                    let mut spike_vec: Vec<Spike> = Vec::new();
 
-                for (neuron_idx, neuron) in layer.neurons.iter_mut().enumerate() {
-                    let weighted_input = calculate_weighted_input(layer_idx, neuron_idx, &self.layers, &input, t);
-                    let spike = neuron.handle_spike(weighted_input, t);
+                    for (neuron_idx, neuron) in layer.neurons.iter_mut().enumerate() {
+                        let weighted_input = calculate_weighted_input(layer_idx, neuron_idx, &self.layers, &input, t);
+                        let spike = neuron.handle_spike(weighted_input, t);
 
-                    if spike == 1.0 {
-                        spike_vec.push(Spike::new(t, neuron_idx));
+                        if spike == 1.0 {
+                            spike_vec.push(Spike::new(t, neuron_idx));
+                        }
                     }
-                }
 
-                // Handle spike propagation to the next layer (if not the last layer)
-                if layer_idx < self.layers.len() - 1 {
-                    let next_layer = &mut self.layers[layer_idx + 1];
-                    for (neuron_idx, spike) in spike_vec.iter().enumerate() {
-                        if let Some(weight) = next_layer.get_intra_weight_mut(neuron_idx, neuron_idx) {
-                            // Propagate spike with weight
-                            let spike = Spike::new(t, neuron_idx);
-                            if let Some(next_neuron) = next_layer.get_neuron_mut(neuron_idx) {
-                                next_neuron.handle_spike(*weight * spike, t);
+                    // Handle spike propagation to the next layer (if not the last layer)
+                    if layer_idx < self.layers.len() - 1 {
+                        let next_layer = &mut self.layers[layer_idx + 1];
+                        for (neuron_idx, spike) in spike_vec.iter().enumerate() {
+                            if let Some(weight) = next_layer.get_intra_weight_mut(neuron_idx, neuron_idx) {
+                                // Propagate spike with weight
+                                let spike = Spike::new(t, neuron_idx);
+                                if let Some(next_neuron) = next_layer.get_neuron_mut(neuron_idx) {
+                                    next_neuron.handle_spike(*weight * spike, t);
+                                }
                             }
                         }
                     }
                 }
             }
-        }
-        fn calculate_weighted_input<M: Model>(
-            layer_idx: usize,
-            neuron_idx: usize,
-            layers: &Vec<Layer<M>>,
-            input: &Vec<Vec<u8>>,
-            t: u128,
-        ) -> f64 {
-            let mut weighted_input = 0.0;
+            fn calculate_weighted_input<M: Model>(
+                layer_idx: usize,
+                neuron_idx: usize,
+                layers: &Vec<Layer<M>>,
+                input: &Vec<Vec<u8>>,
+                t: u128,
+            ) -> f64 {
+                let mut weighted_input = 0.0;
 
-            // Calcola l'input pesato dai neuroni di input
-            if layer_idx == 0 {
-                for (input_neuron_idx, input_spike) in input[layer_idx].iter().enumerate() {
-                    // Supponiamo che il peso sia 1.0 per semplicità
-                    weighted_input += *input_spike as f64;
-                }
-            } else {
-                // Calcola l'input pesato dai neuroni nei livelli precedenti
-                for prev_neuron_idx in 0..layers[layer_idx - 1].num_neurons() {
-                    if let Some(weight) = layers[layer_idx - 1].get_intra_weight(prev_neuron_idx, neuron_idx) {
-                        // Supponiamo che ci sia una connessione e calcoliamo l'input pesato
-                        if let Some(prev_neuron) = layers[layer_idx - 1].get_neuron(prev_neuron_idx) {
-                            // Supponiamo che prev_neuron.handle_spike() restituisca lo spike emesso
-                            let prev_neuron_spike = prev_neuron.handle_spike(0.0, t);
-                            weighted_input += prev_neuron_spike * weight;
+                // Calcola l'input pesato dai neuroni di input
+                if layer_idx == 0 {
+                    for (input_neuron_idx, input_spike) in input[layer_idx].iter().enumerate() {
+                        // Supponiamo che il peso sia 1.0 per semplicità
+                        weighted_input += *input_spike as f64;
+                    }
+                } else {
+                    // Calcola l'input pesato dai neuroni nei livelli precedenti
+                    for prev_neuron_idx in 0..layers[layer_idx - 1].num_neurons() {
+                        if let Some(weight) = layers[layer_idx - 1].get_intra_weight(prev_neuron_idx, neuron_idx) {
+                            // Supponiamo che ci sia una connessione e calcoliamo l'input pesato
+                            if let Some(prev_neuron) = layers[layer_idx - 1].get_neuron(prev_neuron_idx) {
+                                // Supponiamo che prev_neuron.handle_spike() restituisca lo spike emesso
+                                let prev_neuron_spike = prev_neuron.handle_spike(0.0, t);
+                                weighted_input += prev_neuron_spike * weight;
+                            }
                         }
                     }
                 }
+
+                weighted_input
+            }
+    */
+
+    pub fn solve_single_thread(mut self, input: Vec<u128>) -> Vec<(u128, Vec<f64>)> {
+        let n_neurons_0 = self.layers[0].num_neurons();
+        let mut result_vec: Vec<(u128, Vec<f64>)> = Vec::new();
+
+        for ts_i in input {
+            let mut ts = ts_i;
+            //matrice 1xn
+            let mut spike_mat = DVector::from_element(n_neurons_0, 1.0).transpose();
+            for (layer_i, layer) in self.layers.iter_mut().enumerate() {
+                let mat = &layer.input_weights; //matrice nxn colonna0
+                let weighted_matrix = &spike_mat * mat; //matrice 1xn colonna 0 neruone0 ecc..
+
+                ts += 1;
+                let mut real_spike_vec = Vec::new();
+
+                let mut v_spike = Vec::new();
+                for (index, neuron) in layer.neurons.iter_mut().enumerate() {
+                    let weighted_input_val = weighted_matrix[index];
+                    println!(
+                        "layer: {} neuron:{} ts:{} val:{}",
+                        layer_i, index, ts, weighted_input_val
+                    );
+
+                    let res = M::handle_spike(neuron, weighted_input_val, ts - 1);
+
+                    if res == 1. {
+                        //genera spike
+                        v_spike.push(1.0);
+                        real_spike_vec.push(Spike::new(ts, layer_i, index));
+                    } else {
+                        v_spike.push(0.0);
+                    }
+
+                    //se genera spike aggiungi al vec spike, segna anche se non ha fatto spike
+                }
+                spike_mat = DVector::from_vec(v_spike).transpose();
+                layer.update_layer_ciclo(&real_spike_vec);
             }
 
-            weighted_input
+            //alla fine spike vec è vettore che dice quali enuroni del layer hanno fatto spike
+            //println!("output from last layer at ts:{}  is {:?}  ",ts,spike_mat.as_slice());
+            result_vec.push((ts, spike_mat.as_slice().iter().cloned().collect()));
         }
-*/
-
-
-
-pub fn solve_single_thread(mut self,input:Vec<u128>)->Vec<(u128, Vec<f64>)>{
-
-    let n_neurons_0=self.layers[0].num_neurons();
-    let mut result_vec:Vec<(u128,Vec<f64>)>=Vec::new();
-
-    for ts_i in input{
-        let mut ts=ts_i;
-        //matrice 1xn
-        let mut spike_mat=DVector::from_element(n_neurons_0,1.0).transpose();
-        for (layer_i,layer) in self.layers.iter_mut().enumerate(){
-
-            let mat=&layer.input_weights; //matrice nxn colonna0
-            let weighted_matrix=&spike_mat*mat; //matrice 1xn colonna 0 neruone0 ecc..
-                
-            ts+=1;
-            let mut real_spike_vec=Vec::new();
-
-            let mut v_spike=Vec::new();
-            for (index,neuron) in  layer.neurons.iter_mut().enumerate(){
-                let weighted_input_val=weighted_matrix[index];
-                println!("layer: {} neuron:{} ts:{} val:{}",layer_i,index,ts,weighted_input_val);
-                
-                let res=M::handle_spike(neuron, weighted_input_val, ts-1);
-               
-
-                if res==1.{
-                    //genera spike
-                    v_spike.push(1.0);
-                    real_spike_vec.push(Spike::new(ts,layer_i,index));
-                   
-
-                }
-                else {
-                    v_spike.push(0.0);
-                }
-
-                //se genera spike aggiungi al vec spike, segna anche se non ha fatto spike
-            }
-            spike_mat=DVector::from_vec(v_spike).transpose();
-            layer.update_layer_ciclo(&real_spike_vec);
-            
-
-        }
-
-        //alla fine spike vec è vettore che dice quali enuroni del layer hanno fatto spike
-        //println!("output from last layer at ts:{}  is {:?}  ",ts,spike_mat.as_slice());
-        result_vec.push((ts,spike_mat.as_slice().iter().cloned().collect()));
-        
-
+        println!("{:?}", result_vec);
+        result_vec
     }
-    println!("{:?}",result_vec);
-    result_vec
-}
-
 }

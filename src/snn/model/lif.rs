@@ -191,4 +191,8 @@ impl Model for LeakyIntegrateFire {
         neuron.heap_tree=Some(heap_calculator);
         
     }
+
+    fn get_heap(neuron: &Self::Neuron)->Option<HeapCalculator<f64,u64>> {
+        neuron.heap_tree.clone()
+    }
 }

@@ -1,8 +1,9 @@
 //! Main `Model` trait for expanding this library to work with other models. Leaky integrate and fire is built in.
-use std::ops::{Add, Mul};
-
 
 use std::fmt::Debug;
+
+use self::heap::HeapCalculator;
+
 
 
 
@@ -25,6 +26,7 @@ pub trait Model {
 
     fn use_heap(neuron: &mut Self::Neuron,stuck: Stuck,inputs: Vec<f64>);
 
+    fn get_heap(neuron: &Self::Neuron)->Option<HeapCalculator<f64,u64>>;
 
 }
 
