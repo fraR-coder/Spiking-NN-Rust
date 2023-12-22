@@ -111,7 +111,7 @@ impl<M: Model + Clone+'static> Layer<M> {
             //logic for full adder
             "full adder"=>{
                 
-                let inputs:Vec<f64>=self.input_weights.row(neuron_id).iter().cloned().collect();
+                let inputs:Vec<f64>=self.input_weights.column(neuron_id).iter().cloned().collect();
 
                 println!("number of inputs for neuron is {}", inputs.len());
                 M::use_heap(self.get_neuron_mut(neuron_id).unwrap(), stuck,inputs);

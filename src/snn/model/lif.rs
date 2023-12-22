@@ -108,6 +108,8 @@ impl Model for LeakyIntegrateFire {
     ///
 
     fn handle_spike(neuron: &mut LifNeuron, weighted_input_val: f64, ts: u128) -> f64 {
+
+        
         // This early exit serves as a small optimization
         if weighted_input_val == 0.0 {
             return 0.0;
