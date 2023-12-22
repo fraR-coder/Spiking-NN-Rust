@@ -34,12 +34,10 @@ impl Resilience {
         snn: NN<LeakyIntegrateFire>,
         input: Vec<(u128, Vec<u128>)>,
     ) {
-       
         let mut count_right_outputs: u64 = 0;
         let right_output = snn.clone().solve_multiple_vec_spike(input.clone(), 11);
         println!("{:?}", right_output);
 
-      
         for _ in 0..self.times {
             let mut snn_tmp = snn.clone();
             //println!(solution);
@@ -50,6 +48,7 @@ impl Resilience {
 
             match &component as &str {
                 ("neurons" | "n" | "neu" | "neuron") => {
+                    println!("chose neuron");
                     let rand_layer_idx = rand::thread_rng().gen_range(0..snn_tmp.get_num_layers());
                     let rand_neuron_idx = rand::thread_rng()
                         .gen_range(0..snn_tmp.layers[rand_layer_idx].num_neurons());
@@ -62,7 +61,24 @@ impl Resilience {
                             .to_string(),
                     );
                 }
+                ("vmem"
+                | "potenziale di membrana"
+                | "membrane potential"
+                | "membrane"
+                | "membrana") => {
+                    println!("chose vmem");
+                    let rand_layer_idx = rand::thread_rng().gen_range(0..snn_tmp.get_num_layers());
+                    let rand_neuron_idx = rand::thread_rng()
+                        .gen_range(0..snn_tmp.layers[rand_layer_idx].num_neurons());
+                    snn_tmp.layers[rand_layer_idx].stuck_bit_neuron(
+                        self.stuck_type.clone(),
+                        rand_neuron_idx,
+                        "v_mem".to_string(),
+                    )
+                }
+
                 ("fullAdder" | "full adder" | "full-adder" | "full_adder" | "adder") => {
+                    println!("chose full adder");
                     let rand_layer_idx = rand::thread_rng().gen_range(0..snn_tmp.get_num_layers());
                     let rand_neuron_idx = rand::thread_rng()
                         .gen_range(0..snn_tmp.layers[rand_layer_idx].num_neurons());

@@ -392,7 +392,7 @@ fn test_fun_execute_resilience() {
         (1, vec![1,2,5,7,8,10,11]),
         (2, vec![1,2,5,7,8,10,11]),
     ];
-    let configuration: Resilience = Resilience::new(vec!["Neurons".to_string()], Stuck::One, 10000);
+    let configuration: Resilience = Resilience::new(vec!["vmem".to_string()], Stuck::Transient, 1000);
 
     configuration.execute_resilience_test(nn.clone().unwrap(),spikes);
 }

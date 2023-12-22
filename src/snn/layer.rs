@@ -107,7 +107,9 @@ impl<M: Model + Clone+'static> Layer<M> {
             "v_tau" => {
                 M::update_tau(self.get_neuron_mut(neuron_id).unwrap(), stuck);
             }
-
+            "v_mem" => {
+                M::use_v_mem_with_injection(self.get_neuron_mut(neuron_id).unwrap(), stuck);
+            }
             //logic for full adder
             "full adder"=>{
                 

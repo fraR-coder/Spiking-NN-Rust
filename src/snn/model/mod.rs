@@ -2,7 +2,8 @@
 
 use std::fmt::Debug;
 
-use self::heap::HeapCalculator;
+
+use self::{heap::HeapCalculator, lif::InjectionStruct};
 
 
 
@@ -26,7 +27,12 @@ pub trait Model {
 
     fn use_heap(neuron: &mut Self::Neuron,stuck: Stuck,inputs: Vec<f64>);
 
+    fn use_v_mem_with_injection(neuron: &mut Self::Neuron,stuck: Stuck);
+
+
     fn get_heap(neuron: &Self::Neuron)->Option<HeapCalculator<f64,u64>>;
+    fn get_injection_vmem(neuron: &Self::Neuron)->Option<InjectionStruct>;
+
 
 }
 

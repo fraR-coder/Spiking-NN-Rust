@@ -5,7 +5,12 @@ use rand::Rng;
 
 use std::f64;
 
-use super::{Stuck, heap::HeapCalculator};
+use super::{heap::HeapCalculator, Stuck};
+#[derive(Clone, Debug)]
+pub struct InjectionStruct {
+    stuck: Stuck,
+    index: usize,
+}
 
 #[derive(Clone, Debug)]
 pub struct LifNeuron {
@@ -22,6 +27,7 @@ pub struct LifNeuron {
     pub ts_old: u128,
 
     pub heap_tree: Option<HeapCalculator<f64, u64>>,
+    pub injection_vmem: Option<InjectionStruct>,
 }
 /// A struct used to create a specific configuration, simply reusable for other neurons
 
@@ -47,6 +53,7 @@ impl LifNeuron {
             ts_old: 0,
 
             heap_tree: None,
+            injection_vmem: None,
         }
     }
 
@@ -108,12 +115,20 @@ impl Model for LeakyIntegrateFire {
     ///
 
     fn handle_spike(neuron: &mut LifNeuron, weighted_input_val: f64, ts: u128) -> f64 {
-
-        
-        // This early exit serves as a small optimization
-        if weighted_input_val == 0.0 {
-            return 0.0;
+        //apply injection if necessary
+        let mut random_bit_index: usize=0;
+        if let Some(injection_vmem) = Self::get_injection_vmem(neuron) {
+            random_bit_index = injection_vmem.index;
+            let mut bits: u64 = neuron.v_mem.to_bits();
+            match injection_vmem.stuck {
+                Stuck::Zero => bits &= !(1u64 << random_bit_index),
+                Stuck::One => bits |= 1u64 << random_bit_index,
+                Stuck::Transient => bits ^= 1u64 << random_bit_index,
+            };
+            neuron.v_mem = f64::from_bits(bits);
         }
+
+        //do the calculations
         //println!("ts: {}, ts_old: {}",ts, neuron.ts_old);
         let delta_t: f64 = (ts - neuron.ts_old) as f64;
         neuron.ts_old = ts;
@@ -122,6 +137,17 @@ impl Model for LeakyIntegrateFire {
         neuron.v_mem = neuron.v_rest
             + (neuron.v_mem - neuron.v_rest) * (-delta_t / neuron.tau).exp()
             + weighted_input_val;
+
+        //apply stuck
+        if let Some(injection_vmem) = Self::get_injection_vmem(neuron) {
+            let mut bits: u64 = neuron.v_mem.to_bits();
+            match injection_vmem.stuck {
+                Stuck::Zero => bits &= !(1u64 << random_bit_index),
+                Stuck::One => bits |= 1u64 << random_bit_index,
+                Stuck::Transient => bits ^= 1u64 << random_bit_index,
+            };
+            neuron.v_mem = f64::from_bits(bits);
+        }
 
         if neuron.v_mem > neuron.v_th {
             neuron.v_mem = neuron.v_reset;
@@ -188,13 +214,24 @@ impl Model for LeakyIntegrateFire {
     }
 
     fn use_heap(neuron: &mut Self::Neuron, stuck: Stuck, inputs: Vec<f64>) {
-        let dim =(2u32).pow((( inputs.len() as f64).log2().ceil()) as u32) as usize;
-        let heap_calculator=HeapCalculator::new(dim, stuck);
-        neuron.heap_tree=Some(heap_calculator);
-        
+        let dim = (2u32).pow(((inputs.len() as f64).log2().ceil()) as u32) as usize;
+        let heap_calculator = HeapCalculator::new(dim, stuck);
+        neuron.heap_tree = Some(heap_calculator);
     }
 
-    fn get_heap(neuron: &Self::Neuron)->Option<HeapCalculator<f64,u64>> {
+    fn use_v_mem_with_injection(neuron: &mut Self::Neuron, stuck: Stuck) {
+        let random_bit_index = rand::thread_rng().gen_range(0..64);
+        let injection_vmem = InjectionStruct {
+            stuck,
+            index: random_bit_index,
+        };
+        neuron.injection_vmem = Some(injection_vmem);
+    }
+
+    fn get_heap(neuron: &Self::Neuron) -> Option<HeapCalculator<f64, u64>> {
         neuron.heap_tree.clone()
+    }
+    fn get_injection_vmem(neuron: &Self::Neuron) -> Option<InjectionStruct> {
+        neuron.injection_vmem.clone()
     }
 }
