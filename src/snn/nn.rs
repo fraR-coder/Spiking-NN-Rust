@@ -104,7 +104,7 @@ impl<M: Model + Clone> NN<M> {
     /// Each spike is given to all neurons of the first layer, so all
     /// of them have a global visibility of the input
     pub fn solve_single_vec_spike(&mut self, input: Vec<u128>) {
-        println!("Enter solve");
+        // println!("Enter solve");
         let mut index_input: usize = 0;
         let duration = match input.last().clone() {
             //why cloning
@@ -182,7 +182,7 @@ impl<M: Model + Clone> NN<M> {
                             .expect("Error sending the vector of spikes");
                     } else {
                         for s in layer_output.iter() {
-                            println!("Output: {} (thread: {})", s.clone(), thread_name);
+                            // println!("Output: {} (thread: {})", s.clone(), thread_name);
                         }
                     }
                     layer_output = vec![];
@@ -338,6 +338,10 @@ impl<M: Model + Clone> NN<M> {
                             s = input_spike_tmp.clone().get(0).unwrap().ts;
                         }
 
+                        }
+
+                        // println!("\n\n\n\n input spike: {:?}, neuron_idx: {}, matrix: {}",input_spike_tmp.clone(), neuron_idx, &layers[layer_idx].input_weights);
+
                         //do the sum considering the possible errors
                         sum = Self::calculate_sum(input_spike_tmp, &layers[layer_idx], neuron_idx);
 
@@ -392,7 +396,7 @@ impl<M: Model + Clone> NN<M> {
                 // Salvataggio degli spike generati dal layer nell'array
                 //let mut layer_data = layer_clone[layer_idx].lock().unwrap();
                 //layer_data.extend(layer_output);
-            });
+            }); // end thread
             handles.push(handle);
         }
         let input_spikes = Spike::vec_of_all_spikes(input);
@@ -478,7 +482,7 @@ impl<M: Model + Clone> NN<M> {
         }
     }
 
-  
+
 
     pub fn solve_single_thread(mut self, input: Vec<u128>) -> Vec<(u128, Vec<f64>)> {
         let n_neurons_0 = self.layers[0].num_neurons();
@@ -498,10 +502,10 @@ impl<M: Model + Clone> NN<M> {
                 let mut v_spike = Vec::new();
                 for (index, neuron) in layer.neurons.iter_mut().enumerate() {
                     let weighted_input_val = weighted_matrix[index];
-                    println!(
-                        "layer: {} neuron:{} ts:{} val:{}",
-                        layer_i, index, ts, weighted_input_val
-                    );
+                    // println!(
+                    //     "layer: {} neuron:{} ts:{} val:{}",
+                    //     layer_i, index, ts, weighted_input_val
+                    // );
 
                     let res = M::handle_spike(neuron, weighted_input_val, ts - 1);
 

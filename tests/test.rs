@@ -62,10 +62,10 @@ fn test_nn_single_layer() {
             DMatrix::from_vec(2, 2, vec![0.0, 0.0, 0.0, 0.0]),
         );
 
-    println!(
-        "{}",
-        DMatrix::from_vec(3, 2, vec![0.0, 1.0, 0.5, 0.5, 0.0, 1.0,])
-    );
+    // println!(
+    //     "{}",
+    //     DMatrix::from_vec(3, 2, vec![0.0, 1.0, 0.5, 0.5, 0.0, 1.0,])
+    // );
     let spikes: Vec<(u128, Vec<u128>)> = vec![
         (0, vec![1, 2, 3, 5, 6, 7]),
         (1, vec![2, 6, 7, 9]),
@@ -82,7 +82,7 @@ fn test_nn_single_layer() {
         .unwrap()
         .as_millis();
 
-    println!(" executed in {} seconds", time2 - time);
+    // println!(" executed in {} seconds", time2 - time);
 
     /*
       assert_eq!(
@@ -124,7 +124,7 @@ fn test_single_thread() {
         .unwrap()
         .as_nanos();
     let res = nn.expect("error in nn").solve_single_thread(input);
-    println!("{:?}",res);
+    // println!("{:?}",res);
     let time2 = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .unwrap()
@@ -392,7 +392,7 @@ fn test_fun_execute_resilience() {
         (1, vec![1,2,5,7,8,10,11]),
         (2, vec![1,2,5,7,8,10,11]),
     ];
-    let configuration: Resilience = Resilience::new(vec!["vmem".to_string()], Stuck::Transient, 1000);
+    let configuration: Resilience = Resilience::new(vec!["Neurons".to_string()], Stuck::One, 10000);
 
     configuration.execute_resilience_test(nn.clone().unwrap(),spikes);
 }
@@ -473,7 +473,9 @@ fn test_resilience_for_logic_ciruits() {
         (1, vec![1,2,5,7,8,10,11]),
         (2, vec![1,2,5,7,8,10,11]),
     ];
-    let configuration: Resilience = Resilience::new(vec!["full adder".to_string()], Stuck::One, 100);
+    let configuration: Resilience = Resilience::new(vec!["Neurons".to_string()], Stuck::One, 1000);
+    // let configuration: Resilience = Resilience::new(vec!["full adder".to_string(), "Neurons".to_string()], Stuck::One, 1000);
+    // let configuration: Resilience = Resilience::new(vec!["full adder".to_string(), "Neurons".to_string()], Stuck::One, 1000);
 
     configuration.execute_resilience_test(nn.clone().unwrap(),spikes);
 }
