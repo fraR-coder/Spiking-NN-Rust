@@ -1,17 +1,51 @@
-//! Implementation of the Leaky Integrate and Fire (LIF) model for Spiking Neural Networks
+//! The Leaky Integrate and Fire (LIF) module for Spiking Neural Networks.
+//!
+//! The LIF module contains implementations for the Leaky Integrate and Fire neuron model,
+//! which is commonly used in Spiking Neural Networks (SNNs). The `LifNeuron` struct represents
+//! an individual LIF neuron, and the `Configuration` struct provides a convenient way to
+//! create a specific configuration for LIF neurons.
+//!
+//! Additionally, this module defines the `InjectionStruct` struct, which represents an injection
+//! of a specific stuck value at a given index in the membrane potential of a neuron.
+//!
+//! The `LeakyIntegrateFire` struct implements the `Model` trait for the LIF neuron model.
+//! This trait defines the behavior and characteristics of a neuron model used in an SNN.
+//!
+//! Example:
+//! ```
+//! use your_crate_name::snn::lif::{LeakyIntegrateFire, LifNeuron, Configuration};
+//!
+//! // Create a specific configuration for LIF neurons
+//! let lif_config = Configuration::new(-65.0, -70.0, -55.0, 20.0);
+//!
+//! // Create a new LIF neuron using the configuration
+//! let mut lif_neuron = LifNeuron::from_conf(&lif_config);
+//!
+//! // Handle a spike event for the neuron
+//! let output = LeakyIntegrateFire::handle_spike(&mut lif_neuron, 10.0, 100);
+//!
+//! // Update the membrane potential of the neuron
+//! LeakyIntegrateFire::update_v_mem(&mut lif_neuron, 5.0);
+//!
+//! // Check if the neuron has generated a new spike
+//! if output > 0.0 {
+//!     println!("Neuron fired!");
+//! }
+//! ```
 
-use crate::snn::model::Model;
 use rand::Rng;
-
 use std::f64;
 
-use super::{heap::HeapCalculator, Stuck};
+use super::{heap::HeapCalculator, Stuck, Model};
+
+/// Struct representing an injection of a specific stuck value at a given index in the membrane potential.
 #[derive(Clone, Debug)]
 pub struct InjectionStruct {
     stuck: Stuck,
     index: usize,
 }
 
+/// Struct representing a Leaky Integrate and Fire (LIF) neuron.
 #[derive(Clone, Debug)]
 pub struct LifNeuron {
     /// Rest potential
@@ -26,11 +60,13 @@ pub struct LifNeuron {
     pub v_mem: f64,
     pub ts_old: u128,
 
+    /// Heap vector used to compute the sum when there is a bit error injection in a full adder
     pub heap_tree: Option<HeapCalculator<f64, u64>>,
+    /// struct to store information used to update the v_mem of the neuron when there is an error injection
     pub injection_vmem: Option<InjectionStruct>,
 }
-/// A struct used to create a specific configuration, simply reusable for other neurons
 
+/// Struct representing a specific configuration for LIF neurons.
 #[derive(Clone, Debug)]
 pub struct Configuration {
     v_rest: f64,
@@ -116,7 +152,7 @@ impl Model for LeakyIntegrateFire {
 
     fn handle_spike(neuron: &mut LifNeuron, weighted_input_val: f64, ts: u128) -> f64 {
         //apply injection if necessary
-        let mut random_bit_index: usize=0;
+        let mut random_bit_index: usize = 0;
         if let Some(injection_vmem) = Self::get_injection_vmem(neuron) {
             random_bit_index = injection_vmem.index;
             let mut bits: u64 = neuron.v_mem.to_bits();

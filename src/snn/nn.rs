@@ -1,11 +1,14 @@
 use crate::snn::layer::Layer;
 use crate::Model;
-use nalgebra::{DMatrix, DVector, Dyn, Matrix, Matrix1, VecStorage};
+use nalgebra::{DMatrix, DVector};
 use std::sync::{mpsc, Arc, Mutex};
 use std::thread;
 
 use super::Spike;
 
+/// Neural Network (`NN`) structure representing a collection of layers.
+/// The neural network is defined by the type parameter `M`, which must implement
+/// the `Model` trait.
 #[derive(Clone)]
 pub struct NN<M: Model + Clone + 'static> {
     /// All the sorted layers of the neural network
@@ -13,9 +16,38 @@ pub struct NN<M: Model + Clone + 'static> {
 }
 
 impl<M: Model + Clone> NN<M> {
+    /// Creates a new empty neural network.
     pub fn new() -> Self {
         Self { layers: Vec::new() }
     }
+    /// Adds a new layer to the neural network with specified neurons, input weights,
+    /// and intra-layer weights.
+    ///
+    /// # Arguments
+    ///
+    /// * `neurons` - Vector of neurons for the new layer.
+    /// * `input_weights` - Matrix representing input weights. Should have dimensions
+    ///   compatible with the number of neurons in the previous layer.
+    /// * `intra_weights` - Matrix representing intra-layer weights. Should have dimensions
+    ///   compatible with the number of neurons in the current layer.
+    ///
+    /// # Returns
+    ///
+    /// * `Result<Self, String>` - Result containing the updated neural network or an error message.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use your_crate_name::{NN, YourModelType};
+    /// use nalgebra::DMatrix;
+    ///
+    /// let nn = NN::<YourModelType>::new()
+    ///     .layer(
+    ///         vec![/* neurons for the first layer */],
+    ///         DMatrix::from_element(/* input weights */),
+    ///         DMatrix::from_element(/* intra-layer weights */),
+    ///     )
+    ///     .expect("Error creating the neural network.");
     pub fn layer(
         mut self,
         neurons: Vec<M::Neuron>,
@@ -188,9 +220,37 @@ impl<M: Model + Clone> NN<M> {
             handle.join().expect("kk"); //.expect("Failed to join a thread");
         }
     }
-    /// Solves the SNN given a vector of Tuple (neuron_id, vectors of spikes) -> (Vec<(u128,Vec<u128>)>).
-    /// Each spike is referred to a single input neuron.
-    /// In this way neurons have a reduced visibility if the input.
+
+    /// Solves the SNN given a vector of Tuples (neuron_id, vectors of spikes) -> (Vec<(u128, Vec<u128>)>).
+    /// Each spike is referred to a single input neuron, providing reduced visibility to neurons in each layer.
+    ///
+    /// # Arguments
+    ///
+    /// * `input` - Vector of tuples where each tuple represents the neuron_id and the corresponding vector of spikes.
+    /// * `duration` - The duration of the simulation.
+    ///
+    /// # Returns
+    ///
+    /// * `Arc<Mutex<Vec<(u128, Vec<u128>)>>>` - Arc-wrapped Mutex-protected vector containing tuples of neuron_id and generated spikes.
+    ///   Each tuple corresponds to the output of a neuron in the final layer.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use your_crate_name::{NN, YourModelType};
+    /// use nalgebra::DMatrix;
+    /// use std::sync::{Arc, Mutex};
+    ///
+    /// let mut nn = NN::<YourModelType>::new();
+    /// // Add layers to the neural network
+    /// // ...
+    ///
+    /// let input = vec![(0, vec![1, 2, 3]), (1, vec![4, 5, 6])];
+    /// let duration = 10;
+    ///
+    /// let shared_output = nn.solve_multiple_vec_spike(input, duration);
+    ///
+    /// // Access the results using the shared_output Arc.
     pub fn solve_multiple_vec_spike(
         &mut self,
         input: Vec<(u128, Vec<u128>)>,
@@ -276,8 +336,8 @@ impl<M: Model + Clone> NN<M> {
                         let mut s = 0;
                         if !input_spike_tmp.is_empty() {
                             s = input_spike_tmp.clone().get(0).unwrap().ts;
-                        } 
-                        
+                        }
+
                         //do the sum considering the possible errors
                         sum = Self::calculate_sum(input_spike_tmp, &layers[layer_idx], neuron_idx);
 
@@ -375,6 +435,34 @@ impl<M: Model + Clone> NN<M> {
         return shared_output;
     }
 
+    /// Calculates the sum of weighted inputs based on the received spikes and the layer's configuration.
+    ///
+    /// # Arguments
+    ///
+    /// * `input_spike_tmp` - Vector of spikes received by the neuron.
+    /// * `layer` - Reference to the layer configuration.
+    /// * `neuron_idx` - Index of the neuron within the layer.
+    ///
+    /// # Returns
+    ///
+    /// * `f64` - The calculated sum of weighted inputs.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use your_crate_name::{NN, YourModelType, Spike, Layer};
+    /// use nalgebra::DMatrix;
+    ///
+    /// let mut nn = NN::<YourModelType>::new();
+    /// // Add layers to the neural network
+    /// // ...
+    ///
+    /// let layer = Layer::new(/* ... */);
+    /// let neuron_idx = 0;
+    /// let input_spike_tmp = vec![Spike::new(1, 0, 0), Spike::new(2, 1, 0)];
+    ///
+    /// let sum = nn.calculate_sum(input_spike_tmp, &layer, neuron_idx);
+    /// ```
     pub fn calculate_sum(input_spike_tmp: Vec<Spike>, layer: &Layer<M>, neuron_idx: u128) -> f64 {
         let neuron = layer.get_neuron(neuron_idx as usize).unwrap();
 
@@ -390,71 +478,7 @@ impl<M: Model + Clone> NN<M> {
         }
     }
 
-    //che è questa??????
-    pub fn sum_whith_injection(neuron_idx: usize, layer: Layer<M>, spike: Spike) {}
-    /*
-        pub fn solve(&mut self, input: Vec<Vec<u8>>, duration: u128) {
-            for t in 0..duration {
-                // Simulate each time step
-                for (layer_idx, layer) in self.layers.iter_mut().enumerate() {
-                    let mut spike_vec: Vec<Spike> = Vec::new();
-
-                    for (neuron_idx, neuron) in layer.neurons.iter_mut().enumerate() {
-                        let weighted_input = calculate_weighted_input(layer_idx, neuron_idx, &self.layers, &input, t);
-                        let spike = neuron.handle_spike(weighted_input, t);
-
-                        if spike == 1.0 {
-                            spike_vec.push(Spike::new(t, neuron_idx));
-                        }
-                    }
-
-                    // Handle spike propagation to the next layer (if not the last layer)
-                    if layer_idx < self.layers.len() - 1 {
-                        let next_layer = &mut self.layers[layer_idx + 1];
-                        for (neuron_idx, spike) in spike_vec.iter().enumerate() {
-                            if let Some(weight) = next_layer.get_intra_weight_mut(neuron_idx, neuron_idx) {
-                                // Propagate spike with weight
-                                let spike = Spike::new(t, neuron_idx);
-                                if let Some(next_neuron) = next_layer.get_neuron_mut(neuron_idx) {
-                                    next_neuron.handle_spike(*weight * spike, t);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            fn calculate_weighted_input<M: Model>(
-                layer_idx: usize,
-                neuron_idx: usize,
-                layers: &Vec<Layer<M>>,
-                input: &Vec<Vec<u8>>,
-                t: u128,
-            ) -> f64 {
-                let mut weighted_input = 0.0;
-
-                // Calcola l'input pesato dai neuroni di input
-                if layer_idx == 0 {
-                    for (input_neuron_idx, input_spike) in input[layer_idx].iter().enumerate() {
-                        // Supponiamo che il peso sia 1.0 per semplicità
-                        weighted_input += *input_spike as f64;
-                    }
-                } else {
-                    // Calcola l'input pesato dai neuroni nei livelli precedenti
-                    for prev_neuron_idx in 0..layers[layer_idx - 1].num_neurons() {
-                        if let Some(weight) = layers[layer_idx - 1].get_intra_weight(prev_neuron_idx, neuron_idx) {
-                            // Supponiamo che ci sia una connessione e calcoliamo l'input pesato
-                            if let Some(prev_neuron) = layers[layer_idx - 1].get_neuron(prev_neuron_idx) {
-                                // Supponiamo che prev_neuron.handle_spike() restituisca lo spike emesso
-                                let prev_neuron_spike = prev_neuron.handle_spike(0.0, t);
-                                weighted_input += prev_neuron_spike * weight;
-                            }
-                        }
-                    }
-                }
-
-                weighted_input
-            }
-    */
+  
 
     pub fn solve_single_thread(mut self, input: Vec<u128>) -> Vec<(u128, Vec<f64>)> {
         let n_neurons_0 = self.layers[0].num_neurons();

@@ -57,3 +57,6 @@ impl fmt::Display for Spike {
         write!(f, "Spike(ts: {}, layer_id: {}, neuron_id: {})", self.ts, self.layer_id, self.neuron_id)
     }
 }
+
+
+

@@ -17,6 +17,17 @@ pub struct Resilience {
 }
 
 impl Resilience {
+    /// Creates a new `Resilience` instance with the given components, stuck type, and test repetition count.
+    ///
+    /// # Arguments
+    ///
+    /// * `components` - List of all components to be tested for resilience.
+    /// * `stuck_type` - Stuck type: 0 for stuck_at_0, 1 for stuck_at_1, 2 for transient_bit.
+    /// * `times` - The number of times to perform the resilience test.
+    ///
+    /// # Returns
+    ///
+    /// * `Resilience` - A new `Resilience` instance.
     pub fn new(components: Vec<String>, stuck_type: Stuck, times: u128) -> Resilience {
         return Resilience {
             components,
@@ -29,6 +40,17 @@ impl Resilience {
         return self.components[rand::thread_rng().gen_range(0..self.components.len())].clone();
     }
 
+    /// Creates a new `Resilience` instance with the given components, stuck type, and test repetition count.
+    ///
+    /// # Arguments
+    ///
+    /// * `components` - List of all components to be tested for resilience.
+    /// * `stuck_type` - Stuck type: 0 for stuck_at_0, 1 for stuck_at_1, 2 for transient_bit.
+    /// * `times` - The number of times to perform the resilience test.
+    ///
+    /// # Returns
+    ///
+    /// * `Resilience` - A new `Resilience` instance.
     pub fn execute_resilience_test(
         &self,
         snn: NN<LeakyIntegrateFire>,
