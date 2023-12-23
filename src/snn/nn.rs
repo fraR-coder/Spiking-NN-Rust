@@ -338,8 +338,6 @@ impl<M: Model + Clone> NN<M> {
                             s = input_spike_tmp.clone().get(0).unwrap().ts;
                         }
 
-                        }
-
                         // println!("\n\n\n\n input spike: {:?}, neuron_idx: {}, matrix: {}",input_spike_tmp.clone(), neuron_idx, &layers[layer_idx].input_weights);
 
                         //do the sum considering the possible errors
@@ -481,8 +479,6 @@ impl<M: Model + Clone> NN<M> {
             inputs_to_sum.iter().sum()
         }
     }
-
-
 
     pub fn solve_single_thread(mut self, input: Vec<u128>) -> Vec<(u128, Vec<f64>)> {
         let n_neurons_0 = self.layers[0].num_neurons();
