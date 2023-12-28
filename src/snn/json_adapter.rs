@@ -9,9 +9,9 @@ use nalgebra::DMatrix;
 pub struct NeuronJson {
     neurons: String,
     layers: String,
-    v_rest: f64, 
-    v_reset: f64, 
-    v_threshold: f64, 
+    v_rest: f64,
+    v_reset: f64,
+    v_threshold: f64,
     tau: f64
 }
 
@@ -47,7 +47,7 @@ impl InputJson {
         let content = std::fs::read_to_string(pathname).unwrap();
         println!("content: {}", content);
         let mut inputjson_vec: Vec<InputJson> = serde_json::from_str(&content).ok().unwrap();
-        
+
         let mut input_vec: Vec<(u128, Vec<u128>)> = Vec::new();
         for i in inputjson_vec {
             input_vec.push((i.neuron, i.spikes));
@@ -137,44 +137,44 @@ impl NeuronJson{
                     last_neuron = Some(parsed_value);
                 }
             }
-            
+
             // Iterazione da first_layer a last_layer
             if let (Some(first_layer), Some(last_layer)) = (first_layer, last_layer) {
 
                 for layer in first_layer..=last_layer {
 
                     // println!("LAYER: {}", layer);
-                    
+
                     // Iterazione da first_neuron a last_neuron
                     if let (Some(first_neuron), Some(last_neuron)) = (first_neuron, last_neuron) {
 
                         for neuron in first_neuron..=last_neuron {
                             // println!(" Neuron: {}", neuron);
                             neuron_box_vec.push(NeuronBox{layer: layer, position: neuron, neuron: LifNeuron::from_conf(&config)});
-                        }                        
+                        }
                     }
                 }
-                    
+
             }
             else {
                 println!("Valori non validi per l'iterazione");
             }
 
-        }  
+        }
 
         // Ordino i neuron box, in modo da averli raggruppati per layer e position
         neuron_box_vec.sort_by_key(|neuron_box| (neuron_box.layer, neuron_box.position));
- 
+
         // Elimino i possibili duplicati
         neuron_box_vec.dedup_by(|a, b| a.layer == b.layer && a.position == b.position);
- 
+
         println!("\nNEURON BOX LETTI, ORDINATI E SENZA DUPLICATI");
         for neuron_box in &neuron_box_vec {
             println!(" {:?}", neuron_box)
         }
 
         // Inizializzazione della rete neurale
-        let nn = NN::<LeakyIntegrateFire>::new();
+        // let nn = NN::<LeakyIntegrateFire>::new();
         let mut current_layer: usize = 0;
 
         // Lettura dei pesi dal file di configurazione
@@ -191,7 +191,7 @@ impl NeuronJson{
                 let current_layer_weights = &weights_from_file[current_layer];
 
                 // Create the layer
-                nn.clone().layer(
+                nn = nn.clone().layer(
                     layer_neurons.clone(), // Clono il vettore layer_neurons
                     DMatrix::from_vec(
                         current_layer_weights.input_weights.rows,
@@ -203,7 +203,7 @@ impl NeuronJson{
                         current_layer_weights.intra_weights.cols,
                         current_layer_weights.intra_weights.data.clone(),
                     ),
-                );
+                ).unwrap();
 
                 current_layer += 1;
                 layer_neurons.clear();
@@ -232,7 +232,7 @@ impl NeuronJson{
         }else {
             return Err("errore".to_string());
         }
-      
+
         return Ok(nn)
     }
 }
