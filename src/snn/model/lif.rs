@@ -33,12 +33,10 @@
 //! }
 //! ```
 
-
-
 use rand::Rng;
 use std::f64;
 
-use super::{heap::HeapCalculator, Stuck, Model};
+use super::{heap::HeapCalculator, Model, Stuck};
 
 /// Struct representing an injection of a specific stuck value at a given index in the membrane potential.
 #[derive(Clone, Debug)]
@@ -66,6 +64,7 @@ pub struct LifNeuron {
     pub heap_tree: Option<HeapCalculator<f64, u64>>,
     /// struct to store information used to update the v_mem of the neuron when there is an error injection
     pub injection_vmem: Option<InjectionStruct>,
+    comparator: Option<InjectionStruct>,
 }
 
 /// Struct representing a specific configuration for LIF neurons.
@@ -92,6 +91,7 @@ impl LifNeuron {
 
             heap_tree: None,
             injection_vmem: None,
+            comparator: None,
         }
     }
 
@@ -187,11 +187,29 @@ impl Model for LeakyIntegrateFire {
             neuron.v_mem = f64::from_bits(bits);
         }
 
-        if neuron.v_mem > neuron.v_th {
-            neuron.v_mem = neuron.v_reset;
-            1.0
-        } else {
-            0.0
+        //apply stuck
+        if let Some(comparator) = Self::get_comparator(neuron) {
+            match comparator.stuck {
+                Stuck::Zero => 0.0,
+                Stuck::One => 1.0,
+                Stuck::Transient => {
+                    if neuron.v_mem > neuron.v_th {
+                        neuron.v_mem = neuron.v_reset;
+                        0.0
+                    } else {
+                        1.0
+                    }
+                }
+            }
+        }
+        // no injection
+        else {
+            if neuron.v_mem > neuron.v_th {
+                neuron.v_mem = neuron.v_reset;
+                1.0
+            } else {
+                0.0
+            }
         }
     }
 
@@ -271,5 +289,14 @@ impl Model for LeakyIntegrateFire {
     }
     fn get_injection_vmem(neuron: &Self::Neuron) -> Option<InjectionStruct> {
         neuron.injection_vmem.clone()
+    }
+
+    fn use_comparator(neuron: &mut Self::Neuron, stuck: Stuck) {
+        let comparator = InjectionStruct { stuck, index: 0 };
+        neuron.comparator = Some(comparator);
+    }
+
+    fn get_comparator(neuron: &Self::Neuron) -> Option<InjectionStruct> {
+        neuron.comparator.clone()
     }
 }

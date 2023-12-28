@@ -260,6 +260,9 @@ impl<M: Model + Clone> NN<M> {
         let mut index_input: usize = 0;
         // creo tanti canali quanti sono i layer
         let num_layers = self.get_num_layers();
+        if num_layers == 0 {
+            panic!("Error: the neural network is empty");
+        }
         let shared_output = Arc::new(Mutex::new(Vec::<(u128, Vec<u128>)>::new()));
         for i in 0..self.layers.last().unwrap().num_neurons() {
             shared_output.lock().unwrap().push((i as u128, vec![]));

@@ -110,6 +110,17 @@ impl Resilience {
                         "full adder".to_string(),
                     )
                 }
+                ("comparatore" | "comparator" | "threshold" | "threashold comparator" ) => {
+                    println!("chose comparator");
+                    let rand_layer_idx = rand::thread_rng().gen_range(0..snn_tmp.get_num_layers());
+                    let rand_neuron_idx = rand::thread_rng()
+                        .gen_range(0..snn_tmp.layers[rand_layer_idx].num_neurons());
+                    snn_tmp.layers[rand_layer_idx].stuck_bit_neuron(
+                        self.stuck_type.clone(),
+                        rand_neuron_idx,
+                        "comparator".to_string(),
+                    )
+                }
                 _ => {
                     println!("Error unknown component");
                 }

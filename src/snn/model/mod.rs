@@ -53,6 +53,13 @@ pub trait Model {
 
     /// Retrieves the injection structure for the neuron, if available.
     fn get_injection_vmem(neuron: &Self::Neuron) -> Option<InjectionStruct>;
+
+    /// Configures the neuron to apply injection on the comparator.
+    fn use_comparator(neuron: &mut Self::Neuron, stuck: Stuck);
+
+    /// Retrieves the comparator for injection for the neuron, if available.
+    fn get_comparator(neuron: &Self::Neuron) -> Option<InjectionStruct>;
+
 }
 
 /// Enum representing different stuck values.

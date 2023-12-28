@@ -5,8 +5,8 @@ use crate::Model;
 use na::DMatrix;
 use nalgebra::DVector;
 
-use super::model::Stuck;
 use super::model::lif::LeakyIntegrateFire;
+use super::model::Stuck;
 use super::nn::NN; //guarda metodi from_fn e from_vec
 
 /// A single layer in the neural network
@@ -85,12 +85,12 @@ impl<M: Model + Clone + 'static> Layer<M> {
 
     pub fn update_layer_ciclo(&mut self, vec_spike: &Vec<Spike>) {
         for neuron_idx in 0..self.num_neurons() {
-            let mut sum=self.calculate_sum(vec_spike.clone(), neuron_idx as u128);
+            let mut sum = self.calculate_sum(vec_spike.clone(), neuron_idx as u128);
             M::update_v_mem(self.get_neuron_mut(neuron_idx).unwrap(), sum);
         }
     }
 
-      /// Calculates the sum of weighted inputs based on the received spikes and the layer's configuration.
+    /// Calculates the sum of weighted inputs based on the received spikes and the layer's configuration.
     ///
     /// # Arguments
     ///
@@ -170,6 +170,10 @@ impl<M: Model + Clone + 'static> Layer<M> {
 
                 println!("number of inputs for neuron is {}", inputs.len());
                 M::use_heap(self.get_neuron_mut(neuron_id).unwrap(), stuck, inputs);
+            }
+            //logic for comparator
+            "comparator" => {
+                M::use_comparator(self.get_neuron_mut(neuron_id).unwrap(), stuck);
             }
 
             _ => {

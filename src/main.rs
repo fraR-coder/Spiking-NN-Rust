@@ -96,12 +96,18 @@ fn test_solve(nn:NN<LeakyIntegrateFire>, input: Vec<u128>) {
 }
 */
 fn main() {
-    let mut nn = create_neural_network_from_user_input();
+
+    let (components, stuck_type, num_trials) = get_resilience_test_input();
+
+    let nn = create_neural_network_from_user_input();
 
     match nn {
         Ok(nn) => {
-            // Do something with the neural network if needed
             println!("Neural network created successfully!");
+
+            let success_percentage =
+                execute_resilience_test(&nn, components, stuck_type, num_trials);
+            println!("Percentuale di successo: {:.2}%", success_percentage);
         }
         Err(err) => {
             // Handle the error and print a message
@@ -109,35 +115,11 @@ fn main() {
         }
     }
 
-    /*
-        // Input per la verifica della resilienza
-        let (components, stuck_type, num_trials) = get_resilience_test_input();
-
-         // Esecuzione della verifica della resilienza
-        let neural_network = match nn {
-            Ok(nn) => nn,
-            Err(e) => {
-                println!("Errore nella definizione della rete neurale: {}",e.to_string())
-            }
-        };
-        let success_percentage = execute_resilience_test(&neural_network, components, stuck_type, num_trials);
-
-        println!("Percentuale di successo: {:.2}%", success_percentage);
-
-
-    */
-    //let nn = f2().unwrap();
-    //let input = vec![0,2,5];
-    //matrix_mul();
-
-    //nn.solve_single_thread(input);
-    // let configuration: Resilience = Resilience::new(vec!["Neurons".to_string(), "Input Links".to_string()], Stuck::Zero, 5);
-    // println!("Il componente scelto è: {}", configuration.get_rand_component());
-    //test_solve(nn,input);
+    
 }
 
 fn create_neural_network_from_user_input() -> Result<NN<LeakyIntegrateFire>, String> {
-    let mut nn = NN::<LeakyIntegrateFire>::new();
+    let nn = NN::<LeakyIntegrateFire>::new();
     let mut config_map: HashMap<String, Configuration> = HashMap::new();
 
     //populate the hashmap
@@ -163,7 +145,6 @@ fn create_neural_network_from_user_input() -> Result<NN<LeakyIntegrateFire>, Str
 
     Ok(nn)
 }
-
 
 fn read_layer_configurations(
     config_map: &HashMap<String, Configuration>,
@@ -197,14 +178,14 @@ fn read_layer_configurations(
         input_neurons_len,
         layer_idx,
         prev_layer_len,
-        0
+        0,
     )?;
     let intra_weights = read_matrix_input(
         "Inserisci i pesi interni del layer : ",
         input_neurons_len,
         layer_idx,
         prev_layer_len,
-        1
+        1,
     )?;
 
     Ok((neurons, input_weights, intra_weights))
@@ -215,12 +196,12 @@ fn read_matrix_input(
     size: usize,
     layer_idx: usize,
     prev_layer_len: usize,
-    selector:usize
+    selector: usize,
 ) -> Result<DMatrix<f64>, String> {
     let mut matrix_values = Vec::new();
     let max_row = if selector == 0 { prev_layer_len } else { size };
-    
-    for row in 0..max_row  {
+
+    for row in 0..max_row {
         println!("{}{} riga {}:", prompt, layer_idx, row);
         let mut row_input = String::new();
         io::stdin()
@@ -244,7 +225,6 @@ fn read_matrix_input(
     println!("matrix {}", matrix);
     Ok(matrix)
 }
-
 
 fn read_f64_input(prompt: &str) -> f64 {
     loop {
@@ -293,32 +273,46 @@ fn read_neuron_configurations(
 }
 
 fn get_resilience_test_input() -> (Vec<String>, Stuck, usize) {
-    let mut input_components = String::new();
-    println!("Inserisci la lista dei componenti su cui iniettare il bit: ");
-    io::stdin()
-        .read_line(&mut input_components)
-        .expect("Errore nella lettura dei componenti");
-    let mut stuck = String::new();
-    println!("Inserisci il tipo di stuck (zero, one, transient): ");
-    io::stdin()
-        .read_line(&mut stuck)
-        .expect("Errore nella lettura del tipo di stuck");
-    let mut num = String::new();
-    println!("Inserisci il numero di test da fare: ");
-    io::stdin()
-        .read_line(&mut num)
-        .expect("Errore nella lettura del numero di test da fare");
+    fn read_input(prompt: &str) -> Result<Vec<String>, io::Error> {
+        let mut input = String::new();
+        println!("prompt: {}", prompt);
+        io::stdin().read_line(&mut input)?;
 
-    return (
-        vec![input_components.split_whitespace().collect()],
-        match stuck.to_lowercase().trim()  {
+        Ok(input
+            .trim()
+            .split(',')
+            .map(|s| s.trim().to_string())
+            .collect())
+    }
+
+    let input_components = read_input(
+        "Inserisci la lista dei componenti su cui iniettare il bit separati da virglole: ",
+    )
+    .expect("Error reading components");
+
+    let stuck = if let Some(stuck_type) =
+        read_input("Inserisci il tipo di stuck (zero, one, transient): ")
+            .expect("Error reading stuck type")
+            .get(0)
+    {
+        match stuck_type.to_lowercase().as_str() {
             "zero" => Stuck::Zero,
             "one" => Stuck::One,
             "transient" => Stuck::Transient,
             _ => Stuck::Zero,
-        },
-        num.trim().parse::<usize>().ok().unwrap(),
-    );
+        }
+    } else {
+        Stuck::Zero // Default value if the input vector is empty
+    };
+
+    let num = read_input("Inserisci il numero di test da fare: ")
+        .and_then(|s| {
+            s[0].parse::<usize>()
+                .map_err(|e| io::Error::new(io::ErrorKind::Other, e))
+        })
+        .expect("Error reading number of tests");
+
+    (input_components, stuck, num)
 }
 
 fn execute_resilience_test(
