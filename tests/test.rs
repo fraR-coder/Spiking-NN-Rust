@@ -316,7 +316,7 @@ fn test_nn_single_thread_complete() {
 #[test]
 fn test_nn_multiple_layer_from_file() {
     let mut nn =
-        NeuronJson::read_from_file("./tests/layer_configuration.json", "./tests/weights.json");
+        NeuronJson::read_from_file("./tests/layers.json", "./tests/weights.json", "./tests/configurations.json");
 
     let input = InputJson::read_input_from_file("./tests/input_spikes.json");
     
