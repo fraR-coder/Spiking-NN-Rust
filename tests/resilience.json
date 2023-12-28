@@ -1,0 +1,5 @@
+{
+  "components": ["Neurons","Full Adder"],
+  "stuck": "One",
+  "times": 100
+}
