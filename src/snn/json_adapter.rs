@@ -4,17 +4,12 @@ use crate::NN;
 use serde::Deserialize;
 
 use nalgebra::DMatrix;
-use crate::snn::model::Stuck;
-use crate::snn::resilience::Resilience;
 
 #[derive(Debug, Deserialize)]
 pub struct NeuronJson {
     neurons: String,
     layers: String,
-    v_rest: f64,
-    v_reset: f64,
-    v_threshold: f64,
-    tau: f64
+    configuration: u32
 }
 
 
@@ -43,6 +38,28 @@ pub struct LayerWeightsJson {
 pub struct InputJson {
     neuron: u128,
     spikes: Vec<u128>
+}
+
+#[derive(Debug, Deserialize)]
+pub struct ConfigurationJson {
+    configuration: u32,
+    v_rest: f64,
+    v_reset: f64,
+    v_threshold: f64,
+    tau: f64
+}
+
+impl ConfigurationJson {
+    pub fn read_from_file(pathname: &str) -> Vec<ConfigurationJson> {
+        let content = std::fs::read_to_string(pathname).unwrap();
+        let mut configurationjson_vec: Vec<ConfigurationJson> = serde_json::from_str(&content).unwrap();
+
+        return configurationjson_vec
+    }
+
+    pub fn find_by_configuration(config_vec: &Vec<ConfigurationJson>, target_config: u32) -> Option<&ConfigurationJson> {
+        config_vec.iter().find(|&config| config.configuration == target_config)
+    }
 }
 
 impl InputJson {
@@ -81,13 +98,16 @@ impl LayerWeightsJson {
 
 impl NeuronJson{
 
-    pub fn read_from_file(layers_pathname: &str, weights_pathname: &str) -> Result<NN<LeakyIntegrateFire>,String>{
+    pub fn read_from_file(layers_pathname: &str, weights_pathname: &str, configurations_pathname: &str) -> Result<NN<LeakyIntegrateFire>,String>{
         let content = std::fs::read_to_string(layers_pathname).unwrap();
         let neuron_json_list: Vec<NeuronJson> = serde_json::from_str(&content).ok().unwrap();
         let mut neuron_box_vec: Vec<NeuronBox> = Vec::new();
         // print!("{:?}", neuron_json_list);
 
-        for nj in &neuron_json_list {
+        let configurations_list: Vec<ConfigurationJson> = ConfigurationJson::read_from_file(configurations_pathname);
+
+        // Separo i neuroni nello stesso elemento json
+        for nj in &neuronjson_list {
 
             let mut first_layer: Option<u32> = None;
             let mut last_layer: Option<u32> = None;
@@ -95,7 +115,18 @@ impl NeuronJson{
             let mut first_neuron: Option<u32> = None;
             let mut last_neuron: Option<u32> = None;
 
-            let config = Configuration::new(nj.v_rest, nj.v_reset, nj.v_threshold, nj.tau);
+            // let config = Configuration::new(nj.v_rest, nj.v_reset, nj.v_threshold, nj.tau);
+            let configJson = ConfigurationJson::find_by_configuration(&configurations_list, nj.configuration);
+            let mut config : Configuration = Configuration::new(0.0, 0.0, 0.0, 0.0);
+
+            match configJson {
+                Some(c) => {
+                    config = Configuration::new(c.v_rest, c.v_reset, c.v_threshold, c.tau);
+                }
+                None => {
+                    println!("Errore");
+                }
+            }
 
             // Verifico se c'è una sequenza di layer
             if nj.layers.contains('-') {
