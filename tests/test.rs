@@ -319,7 +319,11 @@ fn test_nn_multiple_layer_from_file() {
         NeuronJson::read_from_file("./tests/layer_configuration.json", "./tests/weights.json");
 
     let input = InputJson::read_input_from_file("./tests/input_spikes.json");
+    
 
+    let configuration: Resilience = Resilience::new(vec!["Neurons".to_string()], Stuck::One, 1000);
+
+    configuration.execute_resilience_test(nn.clone().unwrap(),input);
     return;
 }
 

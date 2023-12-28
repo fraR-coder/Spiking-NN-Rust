@@ -33,7 +33,7 @@
 //! }
 //! ```
 
-use crate::snn::model::Model;
+
 
 use rand::Rng;
 use std::f64;
