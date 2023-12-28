@@ -45,8 +45,9 @@ pub struct InputJson {
 impl InputJson {
     pub fn read_input_from_file(pathname: &str) -> Vec<(u128, Vec<u128>)> {
         let content = std::fs::read_to_string(pathname).unwrap();
-        let mut inputjson_vec: Vec<InputJson> = serde_json::from_str(&content).unwrap();
-
+        println!("content: {}", content);
+        let mut inputjson_vec: Vec<InputJson> = serde_json::from_str(&content).ok().unwrap();
+        
         let mut input_vec: Vec<(u128, Vec<u128>)> = Vec::new();
         for i in inputjson_vec {
             input_vec.push((i.neuron, i.spikes));
@@ -80,9 +81,9 @@ impl LayerWeightsJson {
 
 impl NeuronJson{
 
-    pub fn read_from_file(layers_pathname: &str, weights_pathname: &str) -> NN<LeakyIntegrateFire>{
+    pub fn read_from_file(layers_pathname: &str, weights_pathname: &str) -> Result<NN<LeakyIntegrateFire>,String>{
         let content = std::fs::read_to_string(layers_pathname).unwrap();
-        let mut neuronjson_list: Vec<NeuronJson> = serde_json::from_str(&content).unwrap();
+        let mut neuronjson_list: Vec<NeuronJson> = serde_json::from_str(&content).ok().unwrap();
         let mut neuron_box_vec: Vec<NeuronBox> = Vec::new();
         // print!("{:?}", neuronjson_list);
 
@@ -228,8 +229,10 @@ impl NeuronJson{
                     current_layer_weights.intra_weights.data.clone(),
                 ),
             );
+        }else {
+            return Err("errore".to_string());
         }
       
-        return nn
+        return Ok(nn)
     }
 }
