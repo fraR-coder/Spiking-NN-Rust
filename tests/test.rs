@@ -484,7 +484,7 @@ fn test_resilience_for_logic_ciruits() {
         (1, vec![1,2,5,7,8,10,11]),
         (2, vec![1,2,5,7,8,10,11]),
     ];
-    let configuration: Resilience = Resilience::new(vec!["Neurons".to_string()], Stuck::One, 1000);
+    let configuration: Resilience = Resilience::new(vec!["full adder".to_string()], Stuck::Transient, 100);
     // let configuration: Resilience = Resilience::new(vec!["full adder".to_string(), "Neurons".to_string()], Stuck::One, 1000);
     // let configuration: Resilience = Resilience::new(vec!["full adder".to_string(), "Neurons".to_string()], Stuck::One, 1000);
 

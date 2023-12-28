@@ -50,11 +50,12 @@ where
     pub fn sum(&self, link: &Link<T, U>) -> T {
         if let Some(stuck) = &self.stuck_bit {
             let mut bits: U = self.value.get_bits(); //get the bit rapresentation of the value
-                                                     //chose the tpe of error
+
+            
             match stuck {
                 Stuck::Zero => bits &= !(self.mask.as_ref().unwrap().clone()),
                 Stuck::One => bits |= self.mask.as_ref().unwrap().clone(),
-                Stuck::Transient => bits = self.invert_bit_at(&bits, link),
+                Stuck::Transient => bits = self.invert_bit_at(&bits, self.mask.clone()),
             };
             let new_val = T::from_bits(bits);
             return new_val + link.value.clone();
@@ -62,11 +63,10 @@ where
 
         if let Some(stuck) = &link.stuck_bit {
             let mut bits: U = link.value.get_bits(); //get the bit rapresentation of the value
-
             match stuck {
                 Stuck::Zero => bits &= !(link.mask.as_ref().unwrap().clone()),
                 Stuck::One => bits |= link.mask.as_ref().unwrap().clone(),
-                Stuck::Transient => bits = self.invert_bit_at(&bits, link),
+                Stuck::Transient => bits = self.invert_bit_at(&bits, link.mask.clone()),
             };
             let new_val = T::from_bits(bits);
             return new_val + self.value.clone();
@@ -75,7 +75,7 @@ where
         self.value.clone() + link.value.clone()
     }
 
-    pub fn product(&self, link: &Link<T, U>) -> T {
+    /* pub fn product(&self, link: &Link<T, U>) -> T {
         if let Some(stuck) = &self.stuck_bit {
             let mut bits: U = self.value.get_bits(); //get the bit rapresentation of the value
 
@@ -103,13 +103,13 @@ where
         }
 
         self.value.clone() * link.value.clone()
-    }
+    } */
 
-    pub fn invert_bit_at(&self, bits: &U, link: &Link<T, U>) -> U {
-        if (bits.clone() & link.mask.as_ref().unwrap().clone()) != U::default() {
-            bits.clone() & !(link.mask.as_ref().unwrap().clone())
+    pub fn invert_bit_at(&self, bits: &U, mask: Option<U>) -> U {
+        if (bits.clone() & mask.as_ref().unwrap().clone()) != U::default() {
+            bits.clone() & !(mask.as_ref().unwrap().clone())
         } else {
-            bits.clone() | link.mask.as_ref().unwrap().clone()
+            bits.clone() | mask.as_ref().unwrap().clone()
         }
     }
 }
@@ -189,7 +189,7 @@ where
         self.heap_vec[len - 2].value.clone()
     }
 
-    pub fn multiply_all(&mut self, inputs: &[T]) -> T {
+   /*  pub fn multiply_all(&mut self, inputs: &[T]) -> T {
         let len = self.heap_vec.len();
         println!("len: {}", len);
         for (i, val) in inputs.into_iter().enumerate() {
@@ -211,7 +211,7 @@ where
             start += (len >> (lv + 1));
         }
         self.heap_vec[len - 2].value.clone()
-    }
+    } */
 }
 fn log2(len: usize) -> usize {
     let mut shifts = 0;

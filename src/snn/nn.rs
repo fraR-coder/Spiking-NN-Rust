@@ -269,9 +269,7 @@ impl<M: Model + Clone> NN<M> {
         let mut index_input: usize = 0;
         // creo tanti canali quanti sono i layer
         let num_layers = self.get_num_layers();
-        if num_layers == 0 {
-            panic!("Error: the neural network is empty");
-        }
+       
         let shared_output = Arc::new(Mutex::new(Vec::<(u128, Vec<u128>)>::new()));
         for i in 0..self.layers.last().unwrap().num_neurons() {
             shared_output.lock().unwrap().push((i as u128, vec![]));
@@ -479,7 +477,6 @@ impl<M: Model + Clone> NN<M> {
     /// ```
     pub fn calculate_sum(input_spike_tmp: Vec<Spike>, layer: &Layer<M>, neuron_idx: u128) -> f64 {
         let neuron = layer.get_neuron(neuron_idx as usize).unwrap();
-
         let inputs_to_sum: Vec<f64> = input_spike_tmp
             .into_iter()
             .map(|spike| layer.input_weights[(spike.neuron_id, neuron_idx as usize)])
