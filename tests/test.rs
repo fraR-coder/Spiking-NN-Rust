@@ -2,7 +2,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 use nalgebra::DMatrix;
 use spiking_nn_resilience::lif::{Configuration, LeakyIntegrateFire, LifNeuron};
-use spiking_nn_resilience::snn::json_adapter::{InputJson, LayerWeightsJson, NeuronJson};
+use spiking_nn_resilience::snn::json_adapter::{InputJson, LayerWeightsJson, NeuronJson, ResilienceJson};
 use spiking_nn_resilience::*;
 use spiking_nn_resilience::snn::model::Stuck;
 //use spiking_nn_resilience::snn::resilience;
@@ -319,11 +319,11 @@ fn test_nn_multiple_layer_from_file() {
         NeuronJson::read_from_file("./tests/layer_configuration.json", "./tests/weights.json");
 
     let input = InputJson::read_input_from_file("./tests/input_spikes.json");
-    
 
-    let configuration: Resilience = Resilience::new(vec!["Neurons".to_string()], Stuck::One, 1000);
 
-    configuration.execute_resilience_test(nn.clone().unwrap(),input);
+    // let configuration: Resilience = Resilience::new(vec!["Neurons".to_string()], Stuck::One, 1000);
+    let configuration: Result<Resilience,String> = ResilienceJson::read_from_file("./tests/resilience.json").expect("Errore lettura file").to_resilience();
+    configuration.ok().unwrap().execute_resilience_test(nn.clone().unwrap(),input);
     return;
 }
 
