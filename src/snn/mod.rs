@@ -5,6 +5,8 @@ pub mod model;
 pub mod nn;
 pub mod resilience;
 
+pub mod json_adapter;
+
 #[derive(PartialEq, Eq, PartialOrd, Ord, Debug, Clone)]
 pub struct Spike {
     /// timestamp of when the spike occurs
