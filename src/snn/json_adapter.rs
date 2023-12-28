@@ -4,6 +4,8 @@ use crate::NN;
 use serde::Deserialize;
 
 use nalgebra::DMatrix;
+use crate::snn::model::Stuck;
+use crate::snn::resilience::Resilience;
 
 #[derive(Debug, Deserialize)]
 pub struct NeuronJson {
@@ -107,7 +109,7 @@ impl NeuronJson{
         let configurations_list: Vec<ConfigurationJson> = ConfigurationJson::read_from_file(configurations_pathname);
 
         // Separo i neuroni nello stesso elemento json
-        for nj in &neuronjson_list {
+        for nj in &neuron_json_list {
 
             let mut first_layer: Option<u32> = None;
             let mut last_layer: Option<u32> = None;
@@ -204,12 +206,14 @@ impl NeuronJson{
         }
 
         let weights_from_file = LayerWeightsJson::read_weights_from_file(weights_pathname);
-
         let mut layer_neurons: Vec<LifNeuron> = Vec::new();
         let mut nn = NN::<LeakyIntegrateFire>::new();
         let mut current_layer: usize = 0;
 
         for neuron_box in &neuron_box_vec {
+            println!("weights {:?}",weights_from_file[current_layer]);
+            println!("layer {:?}",current_layer);
+
             if current_layer == neuron_box.layer as usize {
                 layer_neurons.push(neuron_box.neuron.clone());
             } else {
@@ -241,7 +245,7 @@ impl NeuronJson{
         // Aggiungo l'ultimo layer
         if !layer_neurons.is_empty() {
             let current_layer_weights = &weights_from_file[current_layer];
-            nn = nn.clone().layer(
+            nn.clone().layer(
                 layer_neurons.clone(), // Clono il vettore layer_neurons
                 DMatrix::from_vec(
                     current_layer_weights.input_weights.rows,

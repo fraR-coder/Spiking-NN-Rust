@@ -1,55 +1,54 @@
 [
     {
-        "neurons": "0-2",
+        "neurons": "0",
+        "layers": "0-2",
+        "configuration": 0
+    },
+
+    {
+        "neurons": "1",
+        "layers": "3",
+        "configuration": 0
+    },
+
+    {
+        "neurons": "1",
+        "layers": "1",
+        "configuration": 3
+    },
+
+    {
+        "neurons": "1",
+        "layers": "2",
+        "configuration": 3
+    },
+
+    {
+        "neurons": "0",
+        "layers": "3",
+        "configuration": 3
+    },
+
+    {
+        "neurons": "1",
         "layers": "0",
-        "configuration": 0
+        "configuration": 1
     },
-
     {
-        "neurons": "0",
-        "layers": "1",
-        "configuration": 0
-    },
-
-    {
-        "neurons": "1",
-        "layers": "1",
-        "configuration": 3
-    },
-
-    {
-        "neurons": "0",
-        "layers": "2",
-        "configuration": 0
-    },
-
-    {
-        "neurons": "1",
-        "layers": "2",
-        "configuration": 0
-    },
-
-    {
-        "neurons": "0",
+        "neurons": "3",
         "layers": "3",
-        "configuration": 3
+        "configuration": 1
     },
 
     {
-        "neurons": "1",
-        "layers": "3",
-        "configuration": 0
+        "neurons": "2",
+        "layers": "0",
+        "configuration": 2
     },
 
     {
         "neurons": "2",
         "layers": "3",
         "configuration": 2
-    },
-
-    {
-        "neurons": "1",
-        "layers": "3",
-        "configuration": 1
     }
 ]
