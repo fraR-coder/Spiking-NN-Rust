@@ -5,9 +5,7 @@ use crate::Model;
 use na::DMatrix;
 use nalgebra::DVector;
 
-use super::model::lif::LeakyIntegrateFire;
 use super::model::Stuck;
-use super::nn::NN; //guarda metodi from_fn e from_vec
 
 /// A single layer in the neural network
 ///
@@ -85,7 +83,7 @@ impl<M: Model + Clone + 'static> Layer<M> {
 
     pub fn update_layer_ciclo(&mut self, vec_spike: &Vec<Spike>) {
         for neuron_idx in 0..self.num_neurons() {
-            let mut sum = self.calculate_sum(vec_spike.clone(), neuron_idx as u128);
+            let sum = self.calculate_sum(vec_spike.clone(), neuron_idx as u128);
             M::update_v_mem(self.get_neuron_mut(neuron_idx).unwrap(), sum);
         }
     }

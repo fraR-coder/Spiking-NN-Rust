@@ -1,6 +1,6 @@
 use crate::snn::layer::Layer;
 use crate::Model;
-use nalgebra::{DMatrix, DVector};
+use nalgebra::{DMatrix};
 use std::sync::{mpsc, Arc, Mutex};
 use std::thread;
 
