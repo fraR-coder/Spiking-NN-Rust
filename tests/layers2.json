@@ -1,0 +1,106 @@
+[
+    {
+        "neurons": "0-4",
+        "layers": "0",
+        "configuration": 0
+    },
+    {
+        "neurons": "5-9",
+        "layers": "0",
+        "configuration": 1
+    },
+
+    {
+        "neurons": "0-2",
+        "layers": "1",
+        "configuration": 0
+    },
+
+    {
+        "neurons": "3-4",
+        "layers": "1",
+        "configuration": 3
+    },
+    {
+        "neurons": "0-3",
+        "layers": "2",
+        "configuration": 2
+    },
+
+    {
+        "neurons": "4-7",
+        "layers": "2",
+        "configuration": 3
+    },
+    {
+        "neurons": "8-9",
+        "layers": "2",
+        "configuration": 0
+    },
+
+    {
+        "neurons": "0-4",
+        "layers": "3",
+        "configuration": 0
+    },
+
+    {
+        "neurons": "0-4",
+        "layers": "4",
+    "configuration": 0
+    },
+
+    {
+        "neurons": "0-4",
+        "layers": "5",
+        "configuration": 0
+    },
+
+    {
+        "neurons": "5-9",
+        "layers": "5",
+        "configuration": 3
+    },
+
+    {
+        "neurons": "0-3",
+        "layers": "6",
+        "configuration": 0
+    },
+
+    {
+        "neurons": "0",
+        "layers": "7",
+        "configuration": 3
+    },
+
+    {
+        "neurons": "1-3",
+        "layers": "7",
+        "configuration": 0
+    },
+
+    {
+        "neurons": "0-7",
+        "layers": "8",
+        "configuration": 0
+    },
+
+    {
+        "neurons": "0-2",
+        "layers": "9",
+        "configuration": 0
+    },
+
+    {
+        "neurons": "3-4",
+        "layers": "9",
+        "configuration": 3
+    },
+
+    {
+        "neurons": "5-7",
+        "layers": "9",
+        "configuration": 2
+    }
+]
