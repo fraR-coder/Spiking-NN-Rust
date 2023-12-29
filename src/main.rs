@@ -110,6 +110,7 @@ fn main() {
                 Resilience::new(components, stuck_type, num_trials as u128);
             let first_neurons=nn.layers.get(0).unwrap().num_neurons();
             let spikes=read_spike_vector(first_neurons) ; 
+            println!("spikes: {:?}", spikes);
             configuration.execute_resilience_test(nn.clone(), spikes);
         }
         Err(err) => {
@@ -335,7 +336,7 @@ fn read_spike_vector(num_neurons: usize) -> Vec<(u128,Vec<u128>)> {
 
     for i in 0..num_neurons {
         let mut input = String::new();
-        print!("Inserisci il vettore di spike per il neurone {}: ", i);
+        println!("Inserisci il vettore di spike per il neurone {}: ", i);
         io::stdin()
             .read_line(&mut input)
             .expect("Errore nella lettura dell'input");
