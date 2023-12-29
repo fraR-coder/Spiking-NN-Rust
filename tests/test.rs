@@ -27,7 +27,7 @@ fn test_passthrough_nn() {
         (1, vec![2, 6, 7, 9]),
         (2, vec![2, 5, 6, 10, 11]),
     ];
-    nn.expect("Ciao").solve_multiple_vec_spike(spikes, 11);
+    nn.expect("Ciao").solve_multiple_vec_spike(spikes);
 
     /*
       assert_eq!(
@@ -76,7 +76,7 @@ fn test_nn_single_layer() {
         .duration_since(UNIX_EPOCH)
         .unwrap()
         .as_millis();
-    nn.expect("Error").solve_multiple_vec_spike(spikes, 11);
+    nn.expect("Error").solve_multiple_vec_spike(spikes);
 
     let time2 = SystemTime::now()
         .duration_since(UNIX_EPOCH)
@@ -219,7 +219,7 @@ fn test_nn_multiple_layer() {
         (1, vec![1, 2, 5, 7, 8, 10, 11]),
         (2, vec![1, 2, 5, 7, 8, 10, 11]),
     ];
-    nn.expect("Ciao").solve_multiple_vec_spike(spikes, 11);
+    nn.expect("Ciao").solve_multiple_vec_spike(spikes);
 
     /*
       assert_eq!(
@@ -326,7 +326,19 @@ fn test_nn_multiple_layer_from_file() {
     configuration.ok().unwrap().execute_resilience_test(nn.clone().unwrap(),input);
     return;
 }
+#[test]
+fn test_nn_multiple_layer_from_file2() {
+    let mut nn =
+        NeuronJson::read_from_file("./tests/layers2.json", "./tests/weights2.json", "./tests/configurations2.json");
 
+    let input = InputJson::read_input_from_file("./tests/input_spikes2.json");
+
+
+    // let configuration: Resilience = Resilience::new(vec!["Neurons".to_string()], Stuck::One, 1000);
+    let configuration: Result<Resilience,String> = ResilienceJson::read_from_file("./tests/resilience2.json").expect("Errore lettura file").to_resilience();
+    configuration.ok().unwrap().execute_resilience_test(nn.clone().unwrap(),input);
+    return;
+}
 
 #[test]
 fn test_fun_execute_resilience() {
@@ -403,7 +415,7 @@ fn test_fun_execute_resilience() {
         (1, vec![1,2,5,7,8,10,11]),
         (2, vec![1,2,5,7,8,10,11]),
     ];
-    let configuration: Resilience = Resilience::new(vec!["Neurons".to_string()], Stuck::One, 10000);
+    let configuration: Resilience = Resilience::new(vec!["Full adder".to_string()], Stuck::One, 1);
 
     configuration.execute_resilience_test(nn.clone().unwrap(),spikes);
 }
@@ -484,7 +496,7 @@ fn test_resilience_for_logic_ciruits() {
         (1, vec![1,2,5,7,8,10,11]),
         (2, vec![1,2,5,7,8,10,11]),
     ];
-    let configuration: Resilience = Resilience::new(vec!["full adder".to_string()], Stuck::Transient, 100);
+    let configuration: Resilience = Resilience::new(vec!["Full adder".to_string()], Stuck::Transient, 100);
     // let configuration: Resilience = Resilience::new(vec!["full adder".to_string(), "Neurons".to_string()], Stuck::One, 1000);
     // let configuration: Resilience = Resilience::new(vec!["full adder".to_string(), "Neurons".to_string()], Stuck::One, 1000);
 

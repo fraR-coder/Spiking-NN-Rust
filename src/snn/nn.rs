@@ -257,19 +257,18 @@ impl<M: Model + Clone> NN<M> {
     /// let input = vec![(0, vec![1, 2, 3])];
     /// let duration = 3;
     ///
-    /// let shared_output = nn.clone().solve_multiple_vec_spike(input, duration);
+    /// let shared_output = nn.clone().solve_multiple_vec_spike(input);
     ///
     /// // Access the results using the shared_output Arc.
     pub fn solve_multiple_vec_spike(
         &mut self,
         input: Vec<(u128, Vec<u128>)>,
-        duration: usize,
     ) -> Arc<Mutex<Vec<(u128, Vec<u128>)>>> {
         //println!("Enter solve multiple vec spike");
         let mut index_input: usize = 0;
         // creo tanti canali quanti sono i layer
         let num_layers = self.get_num_layers();
-       
+
         let shared_output = Arc::new(Mutex::new(Vec::<(u128, Vec<u128>)>::new()));
         for i in 0..self.layers.last().unwrap().num_neurons() {
             shared_output.lock().unwrap().push((i as u128, vec![]));
@@ -290,6 +289,8 @@ impl<M: Model + Clone> NN<M> {
 
         // Creazione dei thread
         let mut handles = vec![];
+        let input_spikes = Spike::vec_of_all_spikes(input);
+        let duration = input_spikes.last().clone().unwrap().ts as usize;
         for layer_idx in 0..num_layers {
             let next_tx = if layer_idx < num_layers - 1 {
                 Some(channel_tx[layer_idx + 1].clone())
@@ -407,7 +408,6 @@ impl<M: Model + Clone> NN<M> {
             }); // end thread
             handles.push(handle);
         }
-        let input_spikes = Spike::vec_of_all_spikes(input);
         let mut ts: usize = 0;
         while ts <= duration {
             let spike = match input_spikes.get(index_input) {
@@ -464,12 +464,13 @@ impl<M: Model + Clone> NN<M> {
     /// ```
     /// use spiking_nn_resilience::{NN, Model, Layer};
     /// use nalgebra::DMatrix;
-    /// use spiking_nn_resilience::
-    /// let mut nn = NN::<YourModelType>::new();
+    /// use spiking_nn_resilience::lif::LeakyIntegrateFire;
+    /// use spiking_nn_resilience::snn::Spike;
+    /// let mut nn = NN::<LeakyIntegrateFire>::new();
     /// // Add layers to the neural network
     /// // ...
     ///
-    /// let layer = Layer::new(/* ... */);
+    /// let layer = Layer::new(Layer::new());
     /// let neuron_idx = 0;
     /// let input_spike_tmp = vec![Spike::new(1, 0, 0), Spike::new(2, 1, 0)];
     ///

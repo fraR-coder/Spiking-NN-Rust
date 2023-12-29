@@ -57,7 +57,7 @@ impl Resilience {
         input: Vec<(u128, Vec<u128>)>,
     ) {
         let mut count_right_outputs: u64 = 0;
-        let right_output = snn.clone().solve_multiple_vec_spike(input.clone(), 11);
+        let right_output = snn.clone().solve_multiple_vec_spike(input.clone());
         println!("{:?}", right_output);
 
         for _ in 0..self.times {
@@ -125,7 +125,7 @@ impl Resilience {
                     println!("Error unknown component");
                 }
             }
-            let res = snn_tmp.solve_multiple_vec_spike(input.clone(), 11);
+            let res = snn_tmp.solve_multiple_vec_spike(input.clone());
             //println!("{:?}", res);
             if are_equal(&res, &right_output) {
                 count_right_outputs += 1;
