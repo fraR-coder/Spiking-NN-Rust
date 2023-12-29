@@ -1,6 +1,6 @@
 use crate::snn::layer::Layer;
 use crate::Model;
-use nalgebra::{DMatrix, DVector};
+use nalgebra::{DMatrix};
 use std::sync::{mpsc, Arc, Mutex};
 use std::thread;
 
@@ -307,7 +307,7 @@ impl<M: Model + Clone> NN<M> {
                 // il vettore di spike da passare al thread successivo
                 let mut layer_output: Vec<Spike> = vec![]; // Output del layer (Spike generati)
                 let mut ts: u128 = 0;
-                let mut counter: u128 = 0;
+                // let mut counter: u128 = 0;
                 let mut neuron_counters: Vec<u128> = vec![];
                 for _ in 0..layers[layer_idx].num_neurons() {
                     neuron_counters.push(0);
@@ -342,7 +342,7 @@ impl<M: Model + Clone> NN<M> {
                     //println!("Receive vec: {:?}",input_spike);
                     // eseguo i calcoli per aggiornare le tensioni di membrana e riempio il layer_output di spike
                     for neuron_idx in 0..layers[layer_idx].num_neurons() as u128 {
-                        let mut sum: f64 = 0.0;
+                        let sum: f64;
                         let input_spike_tmp = input_spike.clone();
                         let mut s = 0;
                         if !input_spike_tmp.is_empty() {
@@ -381,7 +381,7 @@ impl<M: Model + Clone> NN<M> {
                             next_tx
                                 .send(layer_output.clone())
                                 .expect("Error sending the vector of spikes");
-                            layers[layer_idx].update_layer_ciclo(&layer_output);
+                            layers[layer_idx].update_layer_cycle(&layer_output);
                         }
                     } else {
                         for s in layer_output.iter() {
@@ -394,7 +394,7 @@ impl<M: Model + Clone> NN<M> {
                                 v.push(s.ts);
                             }
                             //println!("final Output: {} (thread: {})",s.clone(),thread_name);
-                            counter += 1;
+                            // counter += 1;
                             neuron_counters[s.neuron_id] += 1;
                         }
                     }
@@ -464,17 +464,21 @@ impl<M: Model + Clone> NN<M> {
     /// ```
     /// use spiking_nn_resilience::{NN, Model, Layer};
     /// use nalgebra::DMatrix;
-    /// use spiking_nn_resilience::lif::LeakyIntegrateFire;
+    /// use spiking_nn_resilience::lif::{Configuration, LeakyIntegrateFire, LifNeuron};
     /// use spiking_nn_resilience::snn::Spike;
     /// let mut nn = NN::<LeakyIntegrateFire>::new();
     /// // Add layers to the neural network
     /// // ...
-    ///
-    /// let layer = Layer::new(Layer::new());
+    /// let config_0 = Configuration::new(2.0, 0.5, 1.1, 1.0);
+    /// let nn = NN::<LeakyIntegrateFire>::new()
+    ///     .layer(
+    ///         vec![LifNeuron::from_conf(&config_0)],
+    ///     DMatrix::from_vec(1, 1, vec![1.0]),
+    ///     DMatrix::from_vec(1, 1, vec![0.0]));
     /// let neuron_idx = 0;
-    /// let input_spike_tmp = vec![Spike::new(1, 0, 0), Spike::new(2, 1, 0)];
+    /// let input_spike_tmp = vec![Spike::new(1, 0, 0), Spike::new(2, 0, 0)];
     ///
-    /// let sum = nn.calculate_sum(input_spike_tmp, &layer, neuron_idx);
+    /// let sum = NN::calculate_sum(input_spike_tmp, nn.unwrap().layers.last().unwrap(), neuron_idx as u128);
     /// ```
     pub fn calculate_sum(input_spike_tmp: Vec<Spike>, layer: &Layer<M>, neuron_idx: u128) -> f64 {
         let neuron = layer.get_neuron(neuron_idx as usize).unwrap();
@@ -523,13 +527,11 @@ impl<M: Model + Clone> NN<M> {
     //                     v_spike.push(0.0);
     //                 }
     //
-    //                 //se genera spike aggiungi al vec spike, segna anche se non ha fatto spike
     //             }
     //             spike_mat = DVector::from_vec(v_spike).transpose();
-    //             layer.update_layer_ciclo(&real_spike_vec);
+    //             layer.update_layer_cycle(&real_spike_vec);
     //         }
     //
-    //         //alla fine spike vec è vettore che dice quali enuroni del layer hanno fatto spike
     //         //println!("output from last layer at ts:{}  is {:?}  ",ts,spike_mat.as_slice());
     //         result_vec.push((ts, spike_mat.as_slice().iter().cloned().collect()));
     //     }

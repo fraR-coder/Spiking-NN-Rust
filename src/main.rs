@@ -4,13 +4,11 @@ use crate::snn::model::lif::{Configuration, LeakyIntegrateFire, LifNeuron};
 use crate::snn::model::{Model, Stuck};
 use crate::snn::nn::NN;
 use crate::snn::resilience::Resilience;
-use itertools::Itertools;
-use nalgebra::{DMatrix, DVector, Vector};
-use ndarray::Array;
+// use itertools::Itertools;
+use nalgebra::{DMatrix, DVector};
 use std::collections::HashMap;
 use std::io;
-use std::iter::Map;
-use std::str::FromStr;
+// use std::str::FromStr;
 /*
 fn f1() {
     let config = Configuration::new(1.0, 2.0, 3.0, 4.0);
@@ -104,7 +102,7 @@ fn main() {
             let configuration: Resilience =
                 Resilience::new(components, stuck_type, num_trials as u128);
             let first_neurons=nn.layers.get(0).unwrap().num_neurons();
-            let spikes=read_spike_vector(first_neurons) ; 
+            let spikes=read_spike_vector(first_neurons) ;
             println!("spikes: {:?}", spikes);
             configuration.execute_resilience_test(nn.clone(), spikes);
         }
@@ -270,7 +268,7 @@ fn read_neuron_configurations(
         if conf_name.trim().eq_ignore_ascii_case("fine") {
             if config_map.keys().count()==0 {
                 println!("inserisci almeno 1 configurazione");
-                read_neuron_configurations(config_map);
+                read_neuron_configurations(config_map).expect("Error read neuron configurations");
             }
             break;
         }

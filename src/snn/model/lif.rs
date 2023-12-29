@@ -13,9 +13,10 @@
 //!
 //! Example:
 //! ```
-//! use your_crate_name::snn::lif::{LeakyIntegrateFire, LifNeuron, Configuration};
 //!
 //! // Create a specific configuration for LIF neurons
+//! use spiking_nn_resilience::lif::{Configuration, LeakyIntegrateFire, LifNeuron};
+//! use spiking_nn_resilience::Model;
 //! let lif_config = Configuration::new(-65.0, -70.0, -55.0, 20.0);
 //!
 //! // Create a new LIF neuron using the configuration
@@ -86,7 +87,7 @@ impl LifNeuron {
             v_reset,
             v_th,
             tau,
-            v_mem: 0.0, //inizialmente a 0?
+            v_mem: 0.0, //initially a 0?
             ts_old: 0,
 
             heap_tree: None,
@@ -115,7 +116,7 @@ impl LifNeuron {
         res
     }
 }
-// Implementazione del trait Model per LifNeuron
+// implementation of the model trait
 
 impl Configuration {
     /// Create a new Configuration, which can be used to build one or more identical neurons.
@@ -223,7 +224,7 @@ impl Model for LeakyIntegrateFire {
 
     fn update_v_rest(neuron: &mut Self::Neuron, stuck: Stuck) {
         let mut bits = neuron.v_rest.to_bits();
-        //println!("vecchi bit: {}",bits);
+        //println!("old bit: {}",bits);
         let random_bit_index = rand::thread_rng().gen_range(0..64);
         match stuck {
             Stuck::Zero => bits &= !(1u64 << random_bit_index),
@@ -231,7 +232,7 @@ impl Model for LeakyIntegrateFire {
             Stuck::Transient => bits ^= 1u64 << random_bit_index,
         };
         //println!("update_v_rest: {}",random_bit_index);
-        //println!("nuovi bit: {}",bits);
+        //println!("new bit: {}",bits);
         neuron.v_rest = f64::from_bits(bits);
     }
 

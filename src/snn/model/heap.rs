@@ -38,7 +38,7 @@ where
     pub fn new(value: T, stuck_bit: Option<Stuck>) -> Self {
         //select the random bit to apply injection
         let idx = rand::thread_rng().gen_range(0..value.num_bits());
-        println!("idx: {}", idx);
+        // println!("idx: {}", idx);
         Link {
             stuck_bit,
             marker: PhantomData,
@@ -49,9 +49,9 @@ where
 
     pub fn sum(&self, link: &Link<T, U>) -> T {
         if let Some(stuck) = &self.stuck_bit {
-            let mut bits: U = self.value.get_bits(); //get the bit rapresentation of the value
+            let mut bits: U = self.value.get_bits(); //get the bit representation of the value
 
-            
+
             match stuck {
                 Stuck::Zero => bits &= !(self.mask.as_ref().unwrap().clone()),
                 Stuck::One => bits |= self.mask.as_ref().unwrap().clone(),
@@ -62,7 +62,7 @@ where
         }
 
         if let Some(stuck) = &link.stuck_bit {
-            let mut bits: U = link.value.get_bits(); //get the bit rapresentation of the value
+            let mut bits: U = link.value.get_bits(); //get the bit representation of the value
             match stuck {
                 Stuck::Zero => bits &= !(link.mask.as_ref().unwrap().clone()),
                 Stuck::One => bits |= link.mask.as_ref().unwrap().clone(),
@@ -77,7 +77,7 @@ where
 
     /* pub fn product(&self, link: &Link<T, U>) -> T {
         if let Some(stuck) = &self.stuck_bit {
-            let mut bits: U = self.value.get_bits(); //get the bit rapresentation of the value
+            let mut bits: U = self.value.get_bits(); //get the bit representation of the value
 
             match stuck {
                 Stuck::Zero => bits &= !(self.mask.as_ref().unwrap().clone()),
@@ -91,7 +91,7 @@ where
         }
 
         if let Some(stuck) = &link.stuck_bit {
-            let mut bits: U = link.value.get_bits(); //get the bit rapresentation of the value
+            let mut bits: U = link.value.get_bits(); //get the bit representation of the value
 
             match stuck {
                 Stuck::Zero => bits &= !(self.mask.as_ref().unwrap().clone()),
@@ -128,7 +128,7 @@ where
         + BitOr<Output = U>,
 {
     pub fn new(dim: usize, stuck: Stuck) -> Self {
-        //dim is the number of elemnts in the input
+        //dim is the number of elements in the input
         let heap_length = 2 * dim;
         //create a new heap vector filled with Link struct
         let mut heap_vec: Vec<Link<T, U>> = vec![
@@ -140,46 +140,40 @@ where
             };
             heap_length
         ];
-        println!("{}   {}", heap_vec.len(), dim);
+        // println!("{}   {}", heap_vec.len(), dim);
         //choose the link to apply the injection
         let index = rand::thread_rng().gen_range(0..heap_length);
         heap_vec[index] = Link::new(T::default(), Some(stuck));
 
-        println!("stuck link: {}", index);
+        // println!("stuck link: {}", index);
 
         HeapCalculator { heap_vec }
     }
 
     pub fn sum_all(&mut self, inputs: &[T]) -> T {
         let len = self.heap_vec.len();
-        println!("len: {}", len);
-        //aggiungo i valori nell'heap
+        // println!("len: {}", len);
+        //adding values to the heap
         for (i, val) in inputs.into_iter().enumerate() {
             self.heap_vec[i].value = val.clone();
         }
-        //usata per muoversi nel vettore e riposizionare l'indice iniziale su cui voglio lavorare
+        //for the index
         let mut start: usize = 0;
         let number_of_levels: usize = log2(len);
-        println!("number_of_levels: {}", number_of_levels);
+        // println!("number_of_levels: {}", number_of_levels);
 
-        //scorro i livelli dell'albero creato dall'heap
         for lv in 0..number_of_levels {
-            println!("lv: {}", lv);
+            // println!("lv: {}", lv);
 
-            //per ogni livello itera su un numero di elementi diversi,
-            // al lv 0 sono tutti gli elementi di inputs, quindi la prima metà del vettore
-            //all'aumentare del livello dimezzo il numero di dati su cui lavoro
             let lv_dim = len >> (lv + 1);
-            println!("lv_dim: {}", lv_dim);
+            // println!("lv_dim: {}", lv_dim);
 
-            // sommo le due coppie di valori adiacenti quindi avanzo di due indici alla volta
             for i in (0..lv_dim).step_by(2) {
-                println!(
-                    "{} {}",
-                    self.heap_vec[start + i].value,
-                    self.heap_vec[start + i + 1].value
-                );
-                //somma la coppia di valori, error logic included in Link sum function
+                // println!(
+                //     "{} {}",
+                //     self.heap_vec[start + i].value,
+                //     self.heap_vec[start + i + 1].value
+                // );
                 let tmp = self.heap_vec[start + i].sum(&self.heap_vec[start + i + 1]);
 
                 self.heap_vec[start + (len >> (lv + 1)) + i / 2].value = tmp;
@@ -218,7 +212,7 @@ fn log2(len: usize) -> usize {
     let mut n = len;
 
     while n > 1 {
-        n >>= 1; // shift a destra di un bit
+        n >>= 1; // shift on right
         shifts += 1;
     }
 

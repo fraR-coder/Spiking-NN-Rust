@@ -5,9 +5,7 @@ use crate::Model;
 use na::DMatrix;
 use nalgebra::DVector;
 
-use super::model::lif::LeakyIntegrateFire;
 use super::model::Stuck;
-use super::nn::NN; //guarda metodi from_fn e from_vec
 
 /// A single layer in the neural network
 ///
@@ -24,13 +22,13 @@ pub struct Layer<M: Model + Clone + 'static> {
 }
 
 impl<M: Model + Clone + 'static> Layer<M> {
-    pub fn new(_neuron: M::Neuron) -> Layer<M> {
-        Layer {
-            neurons: Vec::new(),
-            input_weights: DMatrix::<f64>::from_element(0, 0, 0.0),
-            intra_weights: DMatrix::<f64>::from_element(0, 0, 0.0),
-        }
-    }
+    // pub fn new(_neuron: M::Neuron) -> Layer<M> {
+    //     Layer {
+    //         neurons: Vec::new(),
+    //         input_weights: DMatrix::<f64>::from_element(0, 0, 0.0),
+    //         intra_weights: DMatrix::<f64>::from_element(0, 0, 0.0),
+    //     }
+    // }
 
     /// Return the number of neurons in this [Layer]
     pub fn num_neurons(&self) -> usize {
@@ -68,14 +66,13 @@ impl<M: Model + Clone + 'static> Layer<M> {
 
     pub fn update_layer(&mut self, vec_spike: &Vec<Spike>) {
         let mut spike_mat = vec![0.0; self.num_neurons()];
-        //creo il vettore che conterrà 1 in corrispondenza di neuorne che spara e 0 altrimenti
         for spike in vec_spike.iter() {
             let neuron_id = spike.neuron_id;
             spike_mat[neuron_id] = 1.0;
         }
 
-        let dvec = DVector::from_vec(spike_mat);
-        let res = dvec.transpose() * &self.intra_weights;
+        let d_vec = DVector::from_vec(spike_mat);
+        let res = d_vec.transpose() * &self.intra_weights;
         for (neuron_idx, weight) in res.iter().enumerate() {
             if neuron_idx < self.num_neurons() {
                 M::update_v_mem(self.get_neuron_mut(neuron_idx).unwrap(), *weight);
@@ -83,9 +80,9 @@ impl<M: Model + Clone + 'static> Layer<M> {
         }
     }
 
-    pub fn update_layer_ciclo(&mut self, vec_spike: &Vec<Spike>) {
+    pub fn update_layer_cycle(&mut self, vec_spike: &Vec<Spike>) {
         for neuron_idx in 0..self.num_neurons() {
-            let mut sum = self.calculate_sum(vec_spike.clone(), neuron_idx as u128);
+            let sum = self.calculate_sum(vec_spike.clone(), neuron_idx as u128);
             M::update_v_mem(self.get_neuron_mut(neuron_idx).unwrap(), sum);
         }
     }
@@ -105,18 +102,26 @@ impl<M: Model + Clone + 'static> Layer<M> {
     /// # Examples
     ///
     /// ```
-    /// use your_crate_name::{NN, YourModelType, Spike, Layer};
-    /// use nalgebra::DMatrix;
     ///
-    /// let mut nn = NN::<YourModelType>::new();
+    /// use nalgebra::DMatrix;
+    /// use spiking_nn_resilience::lif::{Configuration, LeakyIntegrateFire, LifNeuron};
+    /// use spiking_nn_resilience::{Layer, Model, NN};
+    /// use spiking_nn_resilience::snn::Spike;
+    /// let mut nn = NN::<LeakyIntegrateFire>::new();
     /// // Add layers to the neural network
     /// // ...
-    ///
-    /// let layer = Layer::new(/* ... */);
+    /// let config_0 = Configuration::new(2.0, 0.5, 1.1, 1.0);
+    /// let nn = NN::<LeakyIntegrateFire>::new()
+    ///     .layer(
+    ///         vec![LifNeuron::from_conf(&config_0)],
+    ///     DMatrix::from_vec(1, 1, vec![1.0]),
+    ///     DMatrix::from_vec(1, 1, vec![0.0]));
+    /// let neuron_idx = 0;
+    /// let input_spike_tmp = vec![Spike::new(1, 0, 0), Spike::new(2, 0, 0)];
     /// let neuron_idx = 0;
     /// let input_spike_tmp = vec![Spike::new(1, 0, 0), Spike::new(2, 1, 0)];
     ///
-    /// let sum = nn.calculate_sum(input_spike_tmp, &layer, neuron_idx);
+    /// let sum = nn.unwrap().layers.get(0).unwrap().calculate_sum(input_spike_tmp, neuron_idx);
     /// ```
     pub fn calculate_sum(&self, input_spike_tmp: Vec<Spike>, neuron_idx: u128) -> f64 {
         let neuron = self.get_neuron(neuron_idx as usize).unwrap();
@@ -147,7 +152,7 @@ impl<M: Model + Clone + 'static> Layer<M> {
                 M::update_v_th(self.get_neuron_mut(neuron_id).unwrap(), stuck);
             }
             "v_rest" => {
-                //println!("Entrato in v_rest del layer: ");
+                //println!("entered in v_rest of the layer: ");
                 M::update_v_rest(self.get_neuron_mut(neuron_id).unwrap(), stuck);
             }
             "v_reset" => {
@@ -168,7 +173,7 @@ impl<M: Model + Clone + 'static> Layer<M> {
                     .cloned()
                     .collect();
 
-                println!("number of inputs for neuron is {}", inputs.len());
+                // println!("number of inputs for neuron is {}", inputs.len());
                 M::use_heap(self.get_neuron_mut(neuron_id).unwrap(), stuck, inputs);
             }
             //logic for comparator

@@ -1,11 +1,10 @@
-use std::time::{SystemTime, UNIX_EPOCH};
+// use std::time::{SystemTime, UNIX_EPOCH};
 
 use nalgebra::DMatrix;
 use spiking_nn_resilience::lif::{Configuration, LeakyIntegrateFire, LifNeuron};
-use spiking_nn_resilience::snn::json_adapter::{InputJson, LayerWeightsJson, NeuronJson, ResilienceJson};
+use spiking_nn_resilience::snn::json_adapter::{InputJson, NeuronJson, ResilienceJson};
 use spiking_nn_resilience::*;
 use spiking_nn_resilience::snn::model::Stuck;
-//use spiking_nn_resilience::snn::resilience;
 use spiking_nn_resilience::snn::resilience::Resilience;
 
 #[test]
@@ -72,16 +71,16 @@ fn test_nn_single_layer() {
         (1, vec![2, 6, 7, 9]),
         (2, vec![2, 5, 6, 10, 11]),
     ];
-    let time = SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .unwrap()
-        .as_millis();
+    // let time = SystemTime::now()
+    //     .duration_since(UNIX_EPOCH)
+    //     .unwrap()
+    //     .as_millis();
     nn.expect("Error").solve_multiple_vec_spike(spikes);
 
-    let time2 = SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .unwrap()
-        .as_millis();
+    // let time2 = SystemTime::now()
+    //     .duration_since(UNIX_EPOCH)
+    //     .unwrap()
+    //     .as_millis();
 
     // println!(" executed in {} seconds", time2 - time);
 
@@ -315,7 +314,7 @@ fn test_nn_multiple_layer() {
 // Input from file
 #[test]
 fn test_nn_multiple_layer_from_file() {
-    let mut nn =
+    let nn =
         NeuronJson::read_from_file("./tests/layers.json", "./tests/weights.json", "./tests/configurations.json");
 
     let input = InputJson::read_input_from_file("./tests/input_spikes.json");
@@ -328,7 +327,7 @@ fn test_nn_multiple_layer_from_file() {
 }
 #[test]
 fn test_nn_multiple_layer_from_file2() {
-    let mut nn =
+    let nn =
         NeuronJson::read_from_file("./tests/layers2.json", "./tests/weights2.json", "./tests/configurations2.json");
 
     let input = InputJson::read_input_from_file("./tests/input_spikes2.json");
