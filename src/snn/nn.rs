@@ -1,6 +1,79 @@
+//! # Spiking Neural Network Library
+//!
+//! This Rust library provides a framework for spiking neural networks (SNNs) with support for resilience mechanisms.
+//! The library defines a generic `NN` (Neural Network) structure that represents a collection of layers.
+//!
+//! ## Overview
+//!
+//! The `NN` structure is generic over a type `M` that must implement the `Model` trait. The library provides support
+//! for creating and simulating SNNs with various neuron models, such as Leaky Integrate-and-Fire (LIF) neurons.
+//!
+//! ## Usage
+//!
+//! The library includes the following main components:
+//!
+//! - **Neural Network Structure (`NN`):** Represents a collection of layers.
+//! - **Layer Structure (`Layer<M>`):** Represents an individual layer in the neural network.
+//! - **Spike Structure (`Spike`):** Represents a spike event with timestamp, layer index, and neuron index.
+//!
+//! ## Neuron Model
+//!
+//! The type `M` in the `NN` structure must implement the `Model` trait. The trait includes methods like `handle_spike`
+//! for processing incoming spikes and updating neuron states. Specific neuron models, such as Leaky Integrate-and-Fire,
+//! can be implemented by providing the necessary functionalities.
+//!
+//! ## Creating a Neural Network
+//!
+//! The library supports the creation of a neural network with multiple layers using the `layer` method of the `NN` structure.
+//! Each layer is defined by the number of neurons, input weights, and intra-layer weights.
+//!
+//! ```rust
+//! use spiking_nn_resilience::{NN, Model};
+//! use nalgebra::DMatrix;
+//!
+//! // Define a neuron model (e.g., Leaky Integrate-and-Fire)
+//! struct LeakyIntegrateFire;
+//!
+//! impl Model for LeakyIntegrateFire {
+//!     // Implement required methods for the neuron model
+//! }
+//!
+//! // Create a neural network with LIF neurons
+//! let nn = NN::<LeakyIntegrateFire>::new()
+//!     .layer(
+//!         /* neurons */ vec![/* neuron instances */],
+//!         /* input_weights */ DMatrix::from_vec(1, 1, vec![1.0]),
+//!         /* intra_weights */ DMatrix::from_vec(1, 1, vec![0.0]),
+//!     )
+//!     .expect("Error creating the neural network.");
+//! ```
+//!
+//! ## Solving the Neural Network
+//!
+//! The `NN` structure provides methods for solving the SNN given input spikes. The `solve_multiple_vec_spike` method takes a
+//! vector of tuples representing neuron indices and their corresponding vectors of spikes. The simulation duration is also specified.
+//!
+//! ```rust
+//! // Assuming 'nn' is an instance of the NN structure
+//!
+//! let input = vec![(0, vec![1, 2, 3]), (1, vec![2, 4, 6])];
+//! let duration = 6;
+//!
+//! let shared_output = nn.clone().solve_multiple_vec_spike(input);
+//!
+//! // Access the results using the 'shared_output' Arc.
+//! ```
+//!
+//! ## Resilience Mechanisms
+//!
+//! The library includes support for resilience mechanisms. Specifics of the resilience handling are not provided in this documentation,
+//! but the `ResilienceJson` module suggests a mechanism for reading resilience configurations from files and converting them into resilience objects.
+//!
+
+
 use crate::snn::layer::Layer;
 use crate::Model;
-use nalgebra::{DMatrix};
+use nalgebra::DMatrix;
 use std::sync::{mpsc, Arc, Mutex};
 use std::thread;
 

@@ -142,10 +142,17 @@ impl<M: Model + Clone + 'static> Layer<M> {
     ///
     /// # Arguments
     ///
-    /// * `stuck` - The type of stuck bit to apply.
+    /// * `stuck` - The type of stuck bit to apply (`Stuck::Zero`, `Stuck::One`, or `Stuck::Transient`).
     /// * `neuron_id` - The index of the neuron to apply the stuck bit.
-    /// * `neuron_data` - The specific parameter of the neuron to apply the stuck bit.
-
+    /// * `neuron_data` - The specific parameter of the neuron to apply the stuck bit. Supported values:
+    ///   - "v_th": Threshold voltage parameter.
+    ///   - "v_rest": Resting membrane potential parameter.
+    ///   - "v_reset": Reset membrane potential parameter.
+    ///   - "v_tau": Tau (time constant) parameter.
+    ///   - "v_mem": Membrane potential parameter with fault injection.
+    ///   - "full adder": Logic operation for a full adder.
+    ///   - "comparator": Logic operation for a comparator.
+    ///
     pub fn stuck_bit_neuron(&mut self, stuck: Stuck, neuron_id: usize, neuron_data: String) {
         match neuron_data.as_str() {
             "v_th" => {

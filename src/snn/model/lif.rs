@@ -40,6 +40,7 @@ use std::f64;
 use super::{heap::HeapCalculator, Model, Stuck};
 
 /// Struct representing an injection of a specific stuck value at a given index in the membrane potential.
+/// Also used to inject the error in the comparator
 #[derive(Clone, Debug)]
 pub struct InjectionStruct {
     stuck: Stuck,
@@ -58,14 +59,17 @@ pub struct LifNeuron {
     /// Membrane's time constant. This is the product of its capacity and resistance
     pub tau: f64,
 
+    ///Membrane's tension. Is the value updated when the neuron send a spike
     pub v_mem: f64,
+    ///time variable representing the last time the neuron spiked
     pub ts_old: u128,
 
     /// Heap vector used to compute the sum when there is a bit error injection in a full adder
     pub heap_tree: Option<HeapCalculator<f64, u64>>,
     /// struct to store information used to update the v_mem of the neuron when there is an error injection
     pub injection_vmem: Option<InjectionStruct>,
-    comparator: Option<InjectionStruct>,
+    /// struct to store information used to update the v_mem of the neuron when there is an error injection in the comparator
+    pub comparator: Option<InjectionStruct>,
 }
 
 /// Struct representing a specific configuration for LIF neurons.

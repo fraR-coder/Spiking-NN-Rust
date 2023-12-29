@@ -1,3 +1,58 @@
+//! # Spiking Neural Network Resilience Library
+//!
+//! This Rust library extends the spiking neural network (SNN) framework to incorporate resilience mechanisms.
+//! It introduces a `Resilience` struct to configure and execute resilience tests on SNNs, evaluating their performance under faulty conditions.
+//!
+//! ## Overview
+//!
+//! The library builds upon the Spiking Neural Network Library, providing additional functionality for resilience testing.
+//! The `Resilience` struct allows users to specify components, stuck types, and the number of resilience test repetitions.
+//! Resilience tests are executed by introducing faults in randomly selected components of the SNN and observing the output variations.
+//!
+//! ## Usage
+//!
+//! The resilience library includes the following main components:
+//!
+//! - **Resilience Structure (`Resilience`):** Represents the configuration for a resilience test.
+//! - **Stuck Enum (`Stuck`):** Defines different stuck types, such as stuck-at-0, stuck-at-1, and transient bit.
+//! - **Utility Function (`are_equal`):** Compares two sets of spikes for equality.
+//!
+//! ## Resilience Testing
+//!
+//! To perform resilience testing, users can create an instance of the `Resilience` struct and execute the test on a given SNN.
+//! The library supports various fault types, including faults in neurons, membrane potentials, and specific components like full adders and comparators.
+//!
+//! ```rust
+//! use spiking_nn_resilience::{NN, LeakyIntegrateFire, Resilience, are_equal};
+//! use spiking_nn_resilience::model::Stuck;
+//!
+//! // Assuming 'snn' is an instance of the NN structure
+//!
+//! let resilience_config = Resilience::new(
+//!     /* components */ vec!["neurons".to_string(), "vmem".to_string(), "fullAdder".to_string()],
+//!     /* stuck_type */ Stuck::StuckAt1,
+//!     /* times */ 100,
+//! );
+//!
+//! resilience_config.execute_resilience_test(snn.clone(), /* input spikes */ vec![(0, vec![1, 2, 3]), (1, vec![2, 4, 6])]);
+//! ```
+//!
+//! ## Utility Function
+//!
+//! The `are_equal` function compares two sets of spikes for equality. It is used to check if the output spikes from the resilience tests match the expected output.
+//!
+//! ```rust
+//! // Assuming 'output_a' and 'output_b' are instances of Arc<Mutex<Vec<(u128, Vec<u128>)>>>
+//!
+//! let are_outputs_equal = are_equal(&output_a, &output_b);
+//!
+//! if are_outputs_equal {
+//!     println!("Output spikes are equal.");
+//! } else {
+//!     println!("Output spikes differ.");
+//! }
+//! ```
+
 use crate::snn::model::lif::*;
 use crate::NN;
 use rand::Rng;
@@ -110,7 +165,7 @@ impl Resilience {
                         "full adder".to_string(),
                     )
                 }
-                "comparatore" | "comparator" | "threshold" | "threashold comparator"  => {
+                "comparatore" | "comparator" | "threshold" | "threashold comparator" => {
                     // println!("chose comparator");
                     let rand_layer_idx = rand::thread_rng().gen_range(0..snn_tmp.get_num_layers());
                     let rand_neuron_idx = rand::thread_rng()

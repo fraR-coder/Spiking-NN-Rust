@@ -1,46 +1,54 @@
+//! # JSON Structs
+//!
+//! This module defines several structs representing data structures commonly used when
+//! reading from or writing to JSON files.
 use crate::snn::model::lif::*;
 use crate::NN;
 
 use serde::Deserialize;
 
-use nalgebra::DMatrix;
 use crate::snn::model::Stuck;
 use crate::snn::resilience::Resilience;
+use nalgebra::DMatrix;
 
+/// Represents the configuration of a neuron read from a JSON file.
 #[derive(Debug, Deserialize)]
 pub struct NeuronJson {
     neurons: String,
     layers: String,
-    configuration: u32
+    configuration: u32,
 }
-
+/// Represents a boxed neuron within a neural network layer.
 
 #[derive(Debug)]
 pub struct NeuronBox {
     layer: u32,
     position: u32,
-    neuron: LifNeuron
+    neuron: LifNeuron,
 }
+/// Represents the weights of a layer in a neural network read from a JSON file.
 
 #[derive(Debug, Deserialize)]
 pub struct WeightJson {
     rows: usize,
     cols: usize,
-    data: Vec<f64>
+    data: Vec<f64>,
 }
+/// Represents the weights of a layer in a neural network, including input and intra-layer weights.
 
 #[derive(Debug, Deserialize)]
 pub struct LayerWeightsJson {
-    layer: u32,
+    //layer: u32,
     input_weights: WeightJson,
-    intra_weights: WeightJson
+    intra_weights: WeightJson,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct InputJson {
     neuron: u128,
-    spikes: Vec<u128>
+    spikes: Vec<u128>,
 }
+/// Represents the configuration of a neuron in a neural network read from a JSON file.
 
 #[derive(Debug, Deserialize)]
 pub struct ConfigurationJson {
@@ -48,19 +56,45 @@ pub struct ConfigurationJson {
     v_rest: f64,
     v_reset: f64,
     v_threshold: f64,
-    tau: f64
+    tau: f64,
 }
 
 impl ConfigurationJson {
+    /// Reads a vector of neuron configurations from a JSON file.
+    ///
+    /// # Arguments
+    ///
+    /// * `pathname` - A string slice representing the path to the JSON file.
+    ///
+    /// # Returns
+    ///
+    /// A vector containing neuron configurations (`ConfigurationJson`) on success.
+
     pub fn read_from_file(pathname: &str) -> Vec<ConfigurationJson> {
         let content = std::fs::read_to_string(pathname).unwrap();
-        let configuration_json_vec: Vec<ConfigurationJson> = serde_json::from_str(&content).unwrap();
+        let configuration_json_vec: Vec<ConfigurationJson> =
+            serde_json::from_str(&content).unwrap();
 
-        return configuration_json_vec
+        return configuration_json_vec;
     }
-
-    pub fn find_by_configuration(config_vec: &Vec<ConfigurationJson>, target_config: u32) -> Option<&ConfigurationJson> {
-        config_vec.iter().find(|&config| config.configuration == target_config)
+    /// Finds a neuron configuration by its identifier in the provided vector.
+    ///
+    /// # Arguments
+    ///
+    /// * `config_vec` - A vector of neuron configurations to search.
+    /// * `target_config` - The identifier of the target neuron configuration.
+    ///
+    /// # Returns
+    ///
+    /// An `Option` containing a reference to the found configuration (`&ConfigurationJson`)
+    /// if it exists, or `None` otherwise.
+    pub fn find_by_configuration(
+        config_vec: &Vec<ConfigurationJson>,
+        target_config: u32,
+    ) -> Option<&ConfigurationJson> {
+        config_vec
+            .iter()
+            .find(|&config| config.configuration == target_config)
     }
 }
 
@@ -75,7 +109,7 @@ impl InputJson {
             input_vec.push((i.neuron, i.spikes));
         }
 
-        return input_vec
+        return input_vec;
     }
 }
 
@@ -89,27 +123,46 @@ impl LayerWeightsJson {
         //     println!("{:?}", lw);
         // }
 
-
         return weight_json_vec;
     }
 
     pub fn find_by_layer(neuron_boxes: &[NeuronBox], target_layer: u32) -> Option<&NeuronBox> {
-        return neuron_boxes.iter().find(|&neuron_box| neuron_box.layer == target_layer)
+        return neuron_boxes
+            .iter()
+            .find(|&neuron_box| neuron_box.layer == target_layer);
     }
 }
 
-impl NeuronJson{
-
-    pub fn read_from_file(layers_pathname: &str, weights_pathname: &str, configurations_pathname: &str) -> Result<NN<LeakyIntegrateFire>,String>{
+impl NeuronJson {
+    /// Reads the neuron configuration from a JSON file and constructs a neural network.
+    ///
+    /// This function reads the configuration from the specified JSON file paths and
+    /// creates a neural network based on the information provided.
+    ///
+    /// # Arguments
+    ///
+    /// * `layers_pathname` - A string slice representing the path to the layers JSON file.
+    /// * `weights_pathname` - A string slice representing the path to the weights JSON file.
+    /// * `configurations_pathname` - A string slice representing the path to the configurations JSON file.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` containing the neural network (`NN<LeakyIntegrateFire>`) on success,
+    /// or an error message (`String`) on failure
+    pub fn read_from_file(
+        layers_pathname: &str,
+        weights_pathname: &str,
+        configurations_pathname: &str,
+    ) -> Result<NN<LeakyIntegrateFire>, String> {
         let content = std::fs::read_to_string(layers_pathname).unwrap();
         let neuron_json_list: Vec<NeuronJson> = serde_json::from_str(&content).ok().unwrap();
         let mut neuron_box_vec: Vec<NeuronBox> = Vec::new();
         // print!("{:?}", neuron_json_list);
 
-        let configurations_list: Vec<ConfigurationJson> = ConfigurationJson::read_from_file(configurations_pathname);
+        let configurations_list: Vec<ConfigurationJson> =
+            ConfigurationJson::read_from_file(configurations_pathname);
 
         for nj in &neuron_json_list {
-
             let mut first_layer: Option<u32> = None;
             let mut last_layer: Option<u32> = None;
 
@@ -117,8 +170,9 @@ impl NeuronJson{
             let mut last_neuron: Option<u32> = None;
 
             // let config = Configuration::new(nj.v_rest, nj.v_reset, nj.v_threshold, nj.tau);
-            let config_json = ConfigurationJson::find_by_configuration(&configurations_list, nj.configuration);
-            let mut config : Configuration = Configuration::new(0.0, 0.0, 0.0, 0.0);
+            let config_json =
+                ConfigurationJson::find_by_configuration(&configurations_list, nj.configuration);
+            let mut config: Configuration = Configuration::new(0.0, 0.0, 0.0, 0.0);
 
             match config_json {
                 Some(c) => {
@@ -139,8 +193,7 @@ impl NeuronJson{
                 if let Ok(last) = parts[1].parse::<u32>() {
                     last_layer = Some(last);
                 }
-            }
-            else {
+            } else {
                 if let Ok(parsed_value) = nj.layers.parse::<u32>() {
                     first_layer = Some(parsed_value);
                     last_layer = Some(parsed_value);
@@ -157,8 +210,7 @@ impl NeuronJson{
                 if let Ok(last) = parts[1].parse::<u32>() {
                     last_neuron = Some(last);
                 }
-            }
-            else {
+            } else {
                 if let Ok(parsed_value) = nj.neurons.parse::<u32>() {
                     first_neuron = Some(parsed_value);
                     last_neuron = Some(parsed_value);
@@ -166,24 +218,22 @@ impl NeuronJson{
             }
 
             if let (Some(first_layer), Some(last_layer)) = (first_layer, last_layer) {
-
                 for layer in first_layer..=last_layer {
-
                     // println!("LAYER: {}", layer);
 
                     if let (Some(first_neuron), Some(last_neuron)) = (first_neuron, last_neuron) {
-
                         for neuron in first_neuron..=last_neuron {
                             // println!(" Neuron: {}", neuron);
-                            neuron_box_vec.push(NeuronBox{layer, position: neuron, neuron: LifNeuron::from_conf(&config)});
+                            neuron_box_vec.push(NeuronBox {
+                                layer,
+                                position: neuron,
+                                neuron: LifNeuron::from_conf(&config),
+                            });
                         }
                     }
                 }
-
+            } else {
             }
-            else {
-            }
-
         }
 
         neuron_box_vec.sort_by_key(|neuron_box| (neuron_box.layer, neuron_box.position));
@@ -210,19 +260,22 @@ impl NeuronJson{
                 let current_layer_weights = &weights_from_file[current_layer];
 
                 // Create the layer
-                nn = nn.clone().layer(
-                    layer_neurons.clone(),
-                    DMatrix::from_vec(
-                        current_layer_weights.input_weights.rows,
-                        current_layer_weights.input_weights.cols,
-                        current_layer_weights.input_weights.data.clone(),
-                    ),
-                    DMatrix::from_vec(
-                        current_layer_weights.intra_weights.rows,
-                        current_layer_weights.intra_weights.cols,
-                        current_layer_weights.intra_weights.data.clone(),
-                    ),
-                ).unwrap();
+                nn = nn
+                    .clone()
+                    .layer(
+                        layer_neurons.clone(),
+                        DMatrix::from_vec(
+                            current_layer_weights.input_weights.rows,
+                            current_layer_weights.input_weights.cols,
+                            current_layer_weights.input_weights.data.clone(),
+                        ),
+                        DMatrix::from_vec(
+                            current_layer_weights.intra_weights.rows,
+                            current_layer_weights.intra_weights.cols,
+                            current_layer_weights.intra_weights.data.clone(),
+                        ),
+                    )
+                    .unwrap();
 
                 current_layer += 1;
                 layer_neurons.clear();
@@ -234,41 +287,61 @@ impl NeuronJson{
 
         if !layer_neurons.is_empty() {
             let current_layer_weights = &weights_from_file[current_layer];
-            nn.clone().layer(
-                layer_neurons.clone(),
-                DMatrix::from_vec(
-                    current_layer_weights.input_weights.rows,
-                    current_layer_weights.input_weights.cols,
-                    current_layer_weights.input_weights.data.clone(),
-                ),
-                DMatrix::from_vec(
-                    current_layer_weights.intra_weights.rows,
-                    current_layer_weights.intra_weights.cols,
-                    current_layer_weights.intra_weights.data.clone(),
-                ),
-            ).expect("Error in layer");
-        }else {
+            nn.clone()
+                .layer(
+                    layer_neurons.clone(),
+                    DMatrix::from_vec(
+                        current_layer_weights.input_weights.rows,
+                        current_layer_weights.input_weights.cols,
+                        current_layer_weights.input_weights.data.clone(),
+                    ),
+                    DMatrix::from_vec(
+                        current_layer_weights.intra_weights.rows,
+                        current_layer_weights.intra_weights.cols,
+                        current_layer_weights.intra_weights.data.clone(),
+                    ),
+                )
+                .expect("Error in layer");
+        } else {
             return Err("error".to_string());
         }
-        return Ok(nn)
+        return Ok(nn);
     }
 }
+/// Represents the configuration for resilience read from a JSON file.
 #[derive(Debug, Deserialize)]
 pub struct ResilienceJson {
     components: Vec<String>,
     stuck: String,
-    times: u32
+    times: u32,
 }
 impl ResilienceJson {
+    /// Reads the resilience configuration from a JSON file and returns a `Result`.
+    ///
+    /// # Arguments
+    ///
+    /// * `pathname` - A string slice representing the path to the JSON file.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` containing `ResilienceJson` on success or an error message `String` on failure.
+
     pub fn read_from_file(pathname: &str) -> Result<ResilienceJson, String> {
         let content = std::fs::read_to_string(pathname).unwrap();
-        let resilience_configuration_json: ResilienceJson = serde_json::from_str(&content).ok().unwrap();
+        let resilience_configuration_json: ResilienceJson =
+            serde_json::from_str(&content).ok().unwrap();
 
         return Ok(resilience_configuration_json);
     }
+    /// Converts `ResilienceJson` into `Resilience`.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` containing `Resilience` on success or an error message `String` on failure.
+
     pub fn to_resilience(self) -> Result<Resilience, String> {
         let stuck_type = match self.stuck.to_lowercase().as_str() {
-            "stuck_at_0" | "zero" | "z" | "0"  => Ok(Stuck::Zero),
+            "stuck_at_0" | "zero" | "z" | "0" => Ok(Stuck::Zero),
             "stuck_at_1" | "one" | "o" | "1" => Ok(Stuck::One),
             "transient_bit" | "transient" | "t" | "2" => Ok(Stuck::Transient),
             _ => Err(format!("Invalid stuck type: {}", self.stuck)),

@@ -1,3 +1,42 @@
+//! # Heap Calculator
+//!
+//! This module defines a heap calculator for performing sum operations on a binary heap.
+//! The heap calculator employs the concept of links, where each link contains a value, a stuck bit
+//! for fault injection, and a mask for manipulating individual bits.
+//!
+//! The `HeapCalculator` struct represents a binary heap calculator, and the `Link` struct is used
+//! for elements in the heap.
+//!
+//! ## Example
+//!
+//! ```rust
+//! use rand::Rng;
+//! use heap_calculator::{HeapCalculator, Stuck};
+//!
+//! // Create a new heap calculator with fault injection at a random position.
+//! let mut heap_calculator: HeapCalculator<f64, u64> = HeapCalculator::new(4, Stuck::Zero);
+//!
+//! // Input values to the heap calculator.
+//! let inputs = vec![1.0, 2.0, 3.0, 4.0];
+//!
+//! // Perform sum operation on all input values.
+//! let result = heap_calculator.sum_all(&inputs);
+//!
+//! println!("Result: {}", result);
+//! ```
+//!
+//! ## Stuck Types
+//!
+//! The `Stuck` enum defines different stuck-at fault types for injection.
+//! - `Stuck::Zero`: Injects a fault where the bit is stuck at 0.
+//! - `Stuck::One`: Injects a fault where the bit is stuck at 1.
+//! - `Stuck::Transient`: Injects a transient fault (flips the bit).
+//!
+//! ## References
+//!
+//! This implementation is based on the binary heap sum operation and fault injection concept.
+//!
+
 use std::{
     fmt::Display,
     marker::PhantomData,
@@ -35,6 +74,13 @@ where
         + Default
         + PartialEq,
 {
+    /// Creates a new `HeapCalculator` with fault injection at a random position.
+    ///
+    /// # Arguments
+    ///
+    /// * `dim` - The number of elements in the input.
+    /// * `stuck` - The type of fault to inject.
+    ///
     pub fn new(value: T, stuck_bit: Option<Stuck>) -> Self {
         //select the random bit to apply injection
         let idx = rand::thread_rng().gen_range(0..value.num_bits());
@@ -50,7 +96,6 @@ where
     pub fn sum(&self, link: &Link<T, U>) -> T {
         if let Some(stuck) = &self.stuck_bit {
             let mut bits: U = self.value.get_bits(); //get the bit representation of the value
-
 
             match stuck {
                 Stuck::Zero => bits &= !(self.mask.as_ref().unwrap().clone()),
@@ -183,7 +228,7 @@ where
         self.heap_vec[len - 2].value.clone()
     }
 
-   /*  pub fn multiply_all(&mut self, inputs: &[T]) -> T {
+    /*  pub fn multiply_all(&mut self, inputs: &[T]) -> T {
         let len = self.heap_vec.len();
         println!("len: {}", len);
         for (i, val) in inputs.into_iter().enumerate() {
