@@ -279,9 +279,9 @@ impl ResilienceJson {
     }
     pub fn to_resilience(self) -> Result<Resilience, String> {
         let stuck_type = match self.stuck.to_lowercase().as_str() {
-            ("stuck_at_0" | "zero" | "z" | "0")  => Ok(Stuck::Zero),
-            ("stuck_at_1" | "one" | "o" | "1") => Ok(Stuck::One),
-            ("transient_bit" | "transient" | "t" | "2") => Ok(Stuck::Transient),
+            "stuck_at_0" | "zero" | "z" | "0"  => Ok(Stuck::Zero),
+            "stuck_at_1" | "one" | "o" | "1" => Ok(Stuck::One),
+            "transient_bit" | "transient" | "t" | "2" => Ok(Stuck::Transient),
             _ => Err(format!("Invalid stuck type: {}", self.stuck)),
         }?;
 

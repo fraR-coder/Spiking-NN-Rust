@@ -464,17 +464,21 @@ impl<M: Model + Clone> NN<M> {
     /// ```
     /// use spiking_nn_resilience::{NN, Model, Layer};
     /// use nalgebra::DMatrix;
-    /// use spiking_nn_resilience::lif::LeakyIntegrateFire;
+    /// use spiking_nn_resilience::lif::{Configuration, LeakyIntegrateFire, LifNeuron};
     /// use spiking_nn_resilience::snn::Spike;
     /// let mut nn = NN::<LeakyIntegrateFire>::new();
     /// // Add layers to the neural network
     /// // ...
-    ///
-    /// let layer = Layer::new(Layer::new());
+    /// let config_0 = Configuration::new(2.0, 0.5, 1.1, 1.0);
+    /// let nn = NN::<LeakyIntegrateFire>::new()
+    ///     .layer(
+    ///         vec![LifNeuron::from_conf(&config_0)],
+    ///     DMatrix::from_vec(1, 1, vec![1.0]),
+    ///     DMatrix::from_vec(1, 1, vec![0.0]));
     /// let neuron_idx = 0;
-    /// let input_spike_tmp = vec![Spike::new(1, 0, 0), Spike::new(2, 1, 0)];
+    /// let input_spike_tmp = vec![Spike::new(1, 0, 0), Spike::new(2, 0, 0)];
     ///
-    /// let sum = nn.calculate_sum(input_spike_tmp, &layer, neuron_idx);
+    /// let sum = NN::calculate_sum(input_spike_tmp, nn.unwrap().layers.last().unwrap(), neuron_idx as u128);
     /// ```
     pub fn calculate_sum(input_spike_tmp: Vec<Spike>, layer: &Layer<M>, neuron_idx: u128) -> f64 {
         let neuron = layer.get_neuron(neuron_idx as usize).unwrap();

@@ -24,13 +24,13 @@ pub struct Layer<M: Model + Clone + 'static> {
 }
 
 impl<M: Model + Clone + 'static> Layer<M> {
-    pub fn new(_neuron: M::Neuron) -> Layer<M> {
-        Layer {
-            neurons: Vec::new(),
-            input_weights: DMatrix::<f64>::from_element(0, 0, 0.0),
-            intra_weights: DMatrix::<f64>::from_element(0, 0, 0.0),
-        }
-    }
+    // pub fn new(_neuron: M::Neuron) -> Layer<M> {
+    //     Layer {
+    //         neurons: Vec::new(),
+    //         input_weights: DMatrix::<f64>::from_element(0, 0, 0.0),
+    //         intra_weights: DMatrix::<f64>::from_element(0, 0, 0.0),
+    //     }
+    // }
 
     /// Return the number of neurons in this [Layer]
     pub fn num_neurons(&self) -> usize {
@@ -105,18 +105,26 @@ impl<M: Model + Clone + 'static> Layer<M> {
     /// # Examples
     ///
     /// ```
-    /// use your_crate_name::{NN, YourModelType, Spike, Layer};
-    /// use nalgebra::DMatrix;
     ///
-    /// let mut nn = NN::<YourModelType>::new();
+    /// use nalgebra::DMatrix;
+    /// use spiking_nn_resilience::lif::{Configuration, LeakyIntegrateFire, LifNeuron};
+    /// use spiking_nn_resilience::{Layer, Model, NN};
+    /// use spiking_nn_resilience::snn::Spike;
+    /// let mut nn = NN::<LeakyIntegrateFire>::new();
     /// // Add layers to the neural network
     /// // ...
-    ///
-    /// let layer = Layer::new(/* ... */);
+    /// let config_0 = Configuration::new(2.0, 0.5, 1.1, 1.0);
+    /// let nn = NN::<LeakyIntegrateFire>::new()
+    ///     .layer(
+    ///         vec![LifNeuron::from_conf(&config_0)],
+    ///     DMatrix::from_vec(1, 1, vec![1.0]),
+    ///     DMatrix::from_vec(1, 1, vec![0.0]));
+    /// let neuron_idx = 0;
+    /// let input_spike_tmp = vec![Spike::new(1, 0, 0), Spike::new(2, 0, 0)];
     /// let neuron_idx = 0;
     /// let input_spike_tmp = vec![Spike::new(1, 0, 0), Spike::new(2, 1, 0)];
     ///
-    /// let sum = nn.calculate_sum(input_spike_tmp, &layer, neuron_idx);
+    /// let sum = nn.unwrap().layers.get(0).unwrap().calculate_sum(input_spike_tmp, neuron_idx);
     /// ```
     pub fn calculate_sum(&self, input_spike_tmp: Vec<Spike>, neuron_idx: u128) -> f64 {
         let neuron = self.get_neuron(neuron_idx as usize).unwrap();
