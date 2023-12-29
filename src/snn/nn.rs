@@ -307,7 +307,7 @@ impl<M: Model + Clone> NN<M> {
                 // il vettore di spike da passare al thread successivo
                 let mut layer_output: Vec<Spike> = vec![]; // Output del layer (Spike generati)
                 let mut ts: u128 = 0;
-                let mut counter: u128 = 0;
+                // let mut counter: u128 = 0;
                 let mut neuron_counters: Vec<u128> = vec![];
                 for _ in 0..layers[layer_idx].num_neurons() {
                     neuron_counters.push(0);
@@ -342,7 +342,7 @@ impl<M: Model + Clone> NN<M> {
                     //println!("Receive vec: {:?}",input_spike);
                     // eseguo i calcoli per aggiornare le tensioni di membrana e riempio il layer_output di spike
                     for neuron_idx in 0..layers[layer_idx].num_neurons() as u128 {
-                        let mut sum: f64 = 0.0;
+                        let sum: f64;
                         let input_spike_tmp = input_spike.clone();
                         let mut s = 0;
                         if !input_spike_tmp.is_empty() {
@@ -381,7 +381,7 @@ impl<M: Model + Clone> NN<M> {
                             next_tx
                                 .send(layer_output.clone())
                                 .expect("Error sending the vector of spikes");
-                            layers[layer_idx].update_layer_ciclo(&layer_output);
+                            layers[layer_idx].update_layer_cycle(&layer_output);
                         }
                     } else {
                         for s in layer_output.iter() {
@@ -394,7 +394,7 @@ impl<M: Model + Clone> NN<M> {
                                 v.push(s.ts);
                             }
                             //println!("final Output: {} (thread: {})",s.clone(),thread_name);
-                            counter += 1;
+                            // counter += 1;
                             neuron_counters[s.neuron_id] += 1;
                         }
                     }
@@ -527,13 +527,11 @@ impl<M: Model + Clone> NN<M> {
     //                     v_spike.push(0.0);
     //                 }
     //
-    //                 //se genera spike aggiungi al vec spike, segna anche se non ha fatto spike
     //             }
     //             spike_mat = DVector::from_vec(v_spike).transpose();
-    //             layer.update_layer_ciclo(&real_spike_vec);
+    //             layer.update_layer_cycle(&real_spike_vec);
     //         }
     //
-    //         //alla fine spike vec è vettore che dice quali enuroni del layer hanno fatto spike
     //         //println!("output from last layer at ts:{}  is {:?}  ",ts,spike_mat.as_slice());
     //         result_vec.push((ts, spike_mat.as_slice().iter().cloned().collect()));
     //     }

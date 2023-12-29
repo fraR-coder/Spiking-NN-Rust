@@ -58,19 +58,19 @@ impl Resilience {
     ) {
         let mut count_right_outputs: u64 = 0;
         let right_output = snn.clone().solve_multiple_vec_spike(input.clone());
-        println!("{:?}", right_output);
+        // println!("{:?}", right_output);
 
         for _ in 0..self.times {
             let mut snn_tmp = snn.clone();
             //println!(solution);
             //println!("Type: {}",&self.get_rand_component().to_lowercase() as &str);
 
-            //select a random componente between the one chosen by the user
+            //select a random component between the one chosen by the user
             let component = self.get_rand_component().to_lowercase();
 
             match &component as &str {
-                ("neurons" | "n" | "neu" | "neuron") => {
-                    println!("chose neuron");
+                "neurons" | "n" | "neu" | "neuron" => {
+                    // println!("chose neuron");
                     let rand_layer_idx = rand::thread_rng().gen_range(0..snn_tmp.get_num_layers());
                     let rand_neuron_idx = rand::thread_rng()
                         .gen_range(0..snn_tmp.layers[rand_layer_idx].num_neurons());
@@ -83,12 +83,12 @@ impl Resilience {
                             .to_string(),
                     );
                 }
-                ("vmem"
+                "vmem"
                 | "potenziale di membrana"
                 | "membrane potential"
                 | "membrane"
-                | "membrana") => {
-                    println!("chose vmem");
+                | "membrana" => {
+                    // println!("chose vmem");
                     let rand_layer_idx = rand::thread_rng().gen_range(0..snn_tmp.get_num_layers());
                     let rand_neuron_idx = rand::thread_rng()
                         .gen_range(0..snn_tmp.layers[rand_layer_idx].num_neurons());
@@ -99,8 +99,8 @@ impl Resilience {
                     )
                 }
 
-                ("fullAdder" | "full adder" | "full-adder" | "full_adder" | "adder") => {
-                    println!("chose full adder");
+                "fullAdder" | "full adder" | "full-adder" | "full_adder" | "adder" => {
+                    // println!("chose full adder");
                     let rand_layer_idx = rand::thread_rng().gen_range(0..snn_tmp.get_num_layers());
                     let rand_neuron_idx = rand::thread_rng()
                         .gen_range(0..snn_tmp.layers[rand_layer_idx].num_neurons());
@@ -110,8 +110,8 @@ impl Resilience {
                         "full adder".to_string(),
                     )
                 }
-                ("comparatore" | "comparator" | "threshold" | "threashold comparator" ) => {
-                    println!("chose comparator");
+                "comparatore" | "comparator" | "threshold" | "threashold comparator"  => {
+                    // println!("chose comparator");
                     let rand_layer_idx = rand::thread_rng().gen_range(0..snn_tmp.get_num_layers());
                     let rand_neuron_idx = rand::thread_rng()
                         .gen_range(0..snn_tmp.layers[rand_layer_idx].num_neurons());
@@ -142,7 +142,7 @@ pub fn are_equal(
     a: &Arc<Mutex<Vec<(u128, Vec<u128>)>>>,
     b: &Arc<Mutex<Vec<(u128, Vec<u128>)>>>,
 ) -> bool {
-    // Lock entrambi i Mutex.
+    // Lock both Mutex.
     let a_guard = a.lock().unwrap();
     let b_guard = b.lock().unwrap();
     *a_guard == *b_guard

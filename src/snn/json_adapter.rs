@@ -54,9 +54,9 @@ pub struct ConfigurationJson {
 impl ConfigurationJson {
     pub fn read_from_file(pathname: &str) -> Vec<ConfigurationJson> {
         let content = std::fs::read_to_string(pathname).unwrap();
-        let mut configurationjson_vec: Vec<ConfigurationJson> = serde_json::from_str(&content).unwrap();
+        let configuration_json_vec: Vec<ConfigurationJson> = serde_json::from_str(&content).unwrap();
 
-        return configurationjson_vec
+        return configuration_json_vec
     }
 
     pub fn find_by_configuration(config_vec: &Vec<ConfigurationJson>, target_config: u32) -> Option<&ConfigurationJson> {
@@ -68,7 +68,7 @@ impl InputJson {
     pub fn read_input_from_file(pathname: &str) -> Vec<(u128, Vec<u128>)> {
         let content = std::fs::read_to_string(pathname).unwrap();
         // println!("content: {}", content);
-        let mut input_json_vec: Vec<InputJson> = serde_json::from_str(&content).ok().unwrap();
+        let input_json_vec: Vec<InputJson> = serde_json::from_str(&content).ok().unwrap();
 
         let mut input_vec: Vec<(u128, Vec<u128>)> = Vec::new();
         for i in input_json_vec {
@@ -82,12 +82,12 @@ impl InputJson {
 impl LayerWeightsJson {
     pub fn read_weights_from_file(pathname: &str) -> Vec<LayerWeightsJson> {
         let content = std::fs::read_to_string(pathname).unwrap();
-        let mut weight_json_vec: Vec<LayerWeightsJson> = serde_json::from_str(&content).unwrap();
+        let weight_json_vec: Vec<LayerWeightsJson> = serde_json::from_str(&content).unwrap();
 
-        println!("WEIGHTS:");
-        for lw in &weight_json_vec {
-            println!("{:?}", lw);
-        }
+        // println!("WEIGHTS:");
+        // for lw in &weight_json_vec {
+        //     println!("{:?}", lw);
+        // }
 
 
         return weight_json_vec;
@@ -108,7 +108,6 @@ impl NeuronJson{
 
         let configurations_list: Vec<ConfigurationJson> = ConfigurationJson::read_from_file(configurations_pathname);
 
-        // Separo i neuroni nello stesso elemento json
         for nj in &neuron_json_list {
 
             let mut first_layer: Option<u32> = None;
@@ -118,23 +117,21 @@ impl NeuronJson{
             let mut last_neuron: Option<u32> = None;
 
             // let config = Configuration::new(nj.v_rest, nj.v_reset, nj.v_threshold, nj.tau);
-            let configJson = ConfigurationJson::find_by_configuration(&configurations_list, nj.configuration);
+            let config_json = ConfigurationJson::find_by_configuration(&configurations_list, nj.configuration);
             let mut config : Configuration = Configuration::new(0.0, 0.0, 0.0, 0.0);
 
-            match configJson {
+            match config_json {
                 Some(c) => {
                     config = Configuration::new(c.v_rest, c.v_reset, c.v_threshold, c.tau);
                 }
                 None => {
-                    println!("Errore");
+                    println!("Error");
                 }
             }
 
-            // Verifico se c'è una sequenza di layer
             if nj.layers.contains('-') {
                 let parts: Vec<&str> = nj.layers.split('-').collect();
 
-                // Converto in u32 gli estremi
                 if let Ok(first) = parts[0].parse::<u32>() {
                     first_layer = Some(first);
                 }
@@ -150,11 +147,9 @@ impl NeuronJson{
                 }
             }
 
-            // Verifico se c'è una sequenza di neuroni
             if nj.neurons.contains('-') {
                 let parts: Vec<&str> = nj.neurons.split('-').collect();
 
-                // Converto in u32 gli estremi
                 if let Ok(first) = parts[0].parse::<u32>() {
                     first_neuron = Some(first);
                 }
@@ -170,14 +165,12 @@ impl NeuronJson{
                 }
             }
 
-            // Iterazione da first_layer a last_layer
             if let (Some(first_layer), Some(last_layer)) = (first_layer, last_layer) {
 
                 for layer in first_layer..=last_layer {
 
                     // println!("LAYER: {}", layer);
 
-                    // Iterazione da first_neuron a last_neuron
                     if let (Some(first_neuron), Some(last_neuron)) = (first_neuron, last_neuron) {
 
                         for neuron in first_neuron..=last_neuron {
@@ -189,21 +182,18 @@ impl NeuronJson{
 
             }
             else {
-                println!("Valori non validi per l'iterazione");
             }
 
         }
 
-        // Ordino i neuron box, in modo da averli raggruppati per layer e position
         neuron_box_vec.sort_by_key(|neuron_box| (neuron_box.layer, neuron_box.position));
 
-        // Elimino i possibili duplicati
         neuron_box_vec.dedup_by(|a, b| a.layer == b.layer && a.position == b.position);
 
-        println!("\nNEURON BOX LETTI, ORDINATI E SENZA DUPLICATI");
-        for neuron_box in &neuron_box_vec {
-            println!(" {:?}", neuron_box)
-        }
+        // println!("neuron box read, sorted and without duplicates");
+        // for neuron_box in &neuron_box_vec {
+        //     println!(" {:?}", neuron_box)
+        // }
 
         let weights_from_file = LayerWeightsJson::read_weights_from_file(weights_pathname);
         let mut layer_neurons: Vec<LifNeuron> = Vec::new();
@@ -211,8 +201,8 @@ impl NeuronJson{
         let mut current_layer: usize = 0;
 
         for neuron_box in &neuron_box_vec {
-            println!("weights {:?}",weights_from_file[current_layer]);
-            println!("layer {:?}",current_layer);
+            // println!("weights {:?}",weights_from_file[current_layer]);
+            // println!("layer {:?}",current_layer);
 
             if current_layer == neuron_box.layer as usize {
                 layer_neurons.push(neuron_box.neuron.clone());
@@ -221,7 +211,7 @@ impl NeuronJson{
 
                 // Create the layer
                 nn = nn.clone().layer(
-                    layer_neurons.clone(), // Clono il vettore layer_neurons
+                    layer_neurons.clone(),
                     DMatrix::from_vec(
                         current_layer_weights.input_weights.rows,
                         current_layer_weights.input_weights.cols,
@@ -242,11 +232,10 @@ impl NeuronJson{
             }
         }
 
-        // Aggiungo l'ultimo layer
         if !layer_neurons.is_empty() {
             let current_layer_weights = &weights_from_file[current_layer];
             nn.clone().layer(
-                layer_neurons.clone(), // Clono il vettore layer_neurons
+                layer_neurons.clone(),
                 DMatrix::from_vec(
                     current_layer_weights.input_weights.rows,
                     current_layer_weights.input_weights.cols,
@@ -259,7 +248,7 @@ impl NeuronJson{
                 ),
             ).expect("Error in layer");
         }else {
-            return Err("errore".to_string());
+            return Err("error".to_string());
         }
         return Ok(nn)
     }
@@ -273,9 +262,9 @@ pub struct ResilienceJson {
 impl ResilienceJson {
     pub fn read_from_file(pathname: &str) -> Result<ResilienceJson, String> {
         let content = std::fs::read_to_string(pathname).unwrap();
-        let resilienceConfigurationJson: ResilienceJson = serde_json::from_str(&content).ok().unwrap();
+        let resilience_configuration_json: ResilienceJson = serde_json::from_str(&content).ok().unwrap();
 
-        return Ok(resilienceConfigurationJson);
+        return Ok(resilience_configuration_json);
     }
     pub fn to_resilience(self) -> Result<Resilience, String> {
         let stuck_type = match self.stuck.to_lowercase().as_str() {

@@ -314,7 +314,7 @@ fn test_nn_multiple_layer() {
 // Input from file
 #[test]
 fn test_nn_multiple_layer_from_file() {
-    let mut nn =
+    let nn =
         NeuronJson::read_from_file("./tests/layers.json", "./tests/weights.json", "./tests/configurations.json");
 
     let input = InputJson::read_input_from_file("./tests/input_spikes.json");
@@ -327,7 +327,7 @@ fn test_nn_multiple_layer_from_file() {
 }
 #[test]
 fn test_nn_multiple_layer_from_file2() {
-    let mut nn =
+    let nn =
         NeuronJson::read_from_file("./tests/layers2.json", "./tests/weights2.json", "./tests/configurations2.json");
 
     let input = InputJson::read_input_from_file("./tests/input_spikes2.json");
