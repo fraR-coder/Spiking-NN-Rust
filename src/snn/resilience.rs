@@ -70,7 +70,7 @@ impl Resilience {
 
             match &component as &str {
                 ("neurons" | "n" | "neu" | "neuron") => {
-                    println!("chose neuron");
+                   // println!("chose neuron");
                     let rand_layer_idx = rand::thread_rng().gen_range(0..snn_tmp.get_num_layers());
                     let rand_neuron_idx = rand::thread_rng()
                         .gen_range(0..snn_tmp.layers[rand_layer_idx].num_neurons());
@@ -88,7 +88,7 @@ impl Resilience {
                 | "membrane potential"
                 | "membrane"
                 | "membrana") => {
-                    println!("chose vmem");
+                    //println!("chose vmem");
                     let rand_layer_idx = rand::thread_rng().gen_range(0..snn_tmp.get_num_layers());
                     let rand_neuron_idx = rand::thread_rng()
                         .gen_range(0..snn_tmp.layers[rand_layer_idx].num_neurons());
@@ -100,7 +100,7 @@ impl Resilience {
                 }
 
                 ("fullAdder" | "full adder" | "full-adder" | "full_adder" | "adder") => {
-                    println!("chose full adder");
+                    //println!("chose full adder");
                     let rand_layer_idx = rand::thread_rng().gen_range(0..snn_tmp.get_num_layers());
                     let rand_neuron_idx = rand::thread_rng()
                         .gen_range(0..snn_tmp.layers[rand_layer_idx].num_neurons());
@@ -111,7 +111,7 @@ impl Resilience {
                     )
                 }
                 ("comparatore" | "comparator" | "threshold" | "threashold comparator" ) => {
-                    println!("chose comparator");
+                    //println!("chose comparator");
                     let rand_layer_idx = rand::thread_rng().gen_range(0..snn_tmp.get_num_layers());
                     let rand_neuron_idx = rand::thread_rng()
                         .gen_range(0..snn_tmp.layers[rand_layer_idx].num_neurons());

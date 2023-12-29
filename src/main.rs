@@ -89,12 +89,7 @@ fn f2() -> Result<NN<LeakyIntegrateFire>, String> {
 }
 
  */
-/*
-fn test_solve(nn:NN<LeakyIntegrateFire>, input: Vec<u128>) {
-    let mut nn_temp = nn.clone();
-    nn_temp.solve_single_vec_spike(input);
-}
-*/
+
 fn main() {
     let nn = create_neural_network_from_user_input();
 
