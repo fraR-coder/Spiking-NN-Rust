@@ -112,6 +112,7 @@ impl Resilience {
         input: Vec<(u128, Vec<u128>)>,
     ) {
         let mut count_right_outputs: u64 = 0;
+        let time_init = std::time::Instant::now();
         let right_output = snn.clone().solve_multiple_vec_spike(input.clone());
         // println!("{:?}", right_output);
 
@@ -186,10 +187,14 @@ impl Resilience {
                 count_right_outputs += 1;
             }
         }
+
         println!(
-            "for this SNN, running the stuck bit {} times, in {}% of cases the output is the same",
+            "For this SNN, running the stuck bit \"{:?}\" on {} for {} times, in {}% of cases the output is the same.\nThe process took {:?} to be finished.",
+            self.stuck_type,
+            self.components.join(", "),
             self.times,
-            count_right_outputs as f64 / self.times as f64 * 100.0
+            count_right_outputs as f64 / self.times as f64 * 100.0,
+            std::time::Instant::now()-time_init
         );
     }
 }

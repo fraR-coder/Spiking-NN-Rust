@@ -23,6 +23,8 @@
 //! The `HeapCalculator` and `Link` structs offer functionality for performing heap-based calculations in SNNs.
 //!
 //! ```rust
+//! use std::marker::PhantomData;
+//! use spiking_nn_resilience::snn::model::Stuck;
 //! pub struct HeapCalculator<T: Clone, U> {
 //!     heap_vec: Vec<Link<T, U>>,
 //! }
@@ -44,6 +46,8 @@
 //! The `NeuronJson` module provides functionality to initialize an SNN based on JSON configurations, layers, and weights.
 //!
 //! ```rust
+//! use spiking_nn_resilience::lif::LeakyIntegrateFire;
+//! use spiking_nn_resilience::NN;
 //! pub struct NeuronJson;
 //!
 //! impl NeuronJson {
@@ -58,6 +62,7 @@
 //! The library includes a `ResilienceJson` module for reading resilience configurations from files and converting them into resilience objects.
 //!
 //! ```rust
+//! use spiking_nn_resilience::Resilience;
 //! pub struct ResilienceJson;
 //!
 //! impl ResilienceJson {

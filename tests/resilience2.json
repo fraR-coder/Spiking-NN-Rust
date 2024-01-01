@@ -1,5 +1,5 @@
 {
-  "components": ["Neurons"],
-  "stuck": "1",
-  "times": 100
+  "components": ["comparator"],
+  "stuck": "0",
+  "times": 10000
 }
