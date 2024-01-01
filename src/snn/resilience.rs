@@ -111,11 +111,12 @@ impl Resilience {
         snn: NN<LeakyIntegrateFire>,
         input: Vec<(u128, Vec<u128>)>,
     ) {
+
         let mut count_right_outputs: u64 = 0;
         let time_init = std::time::Instant::now();
         let right_output = snn.clone().solve_multiple_vec_spike(input.clone());
         // println!("{:?}", right_output);
-
+        println!("Executing resilience test for given Spiking Neural Network");
         for _ in 0..self.times {
             let mut snn_tmp = snn.clone();
             //println!(solution);

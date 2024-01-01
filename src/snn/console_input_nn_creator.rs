@@ -302,3 +302,22 @@ pub fn read_spike_vector(num_neurons: usize) -> Vec<(u128, Vec<u128>)> {
 
     spikes
 }
+
+#[derive(PartialEq)]
+pub enum CreationMode{
+    FromFile,
+    FromTerminal
+}
+pub fn read_snn_creation_mode() -> CreationMode{
+    let mut input = String::new();
+    println!("Come vuoi inserire la rete neurale? \n- 1 per leggere la rete dai file di configurazione\n- 2 per inserire la rete da terminale");
+    io::stdin()
+        .read_line(&mut input)
+        .expect("Errore nella lettura dell'input");
+    if input.trim().parse::<i32>().ok().unwrap()==1{
+        return CreationMode::FromFile
+    } else {
+        return CreationMode::FromTerminal
+    }
+
+}

@@ -1,0 +1,7 @@
+{
+  "configurations": "src/configuration/configurations2.json",
+  "input_spikes": "src/configuration/input_spikes2.json",
+  "layers": "src/configuration/layers2.json",
+  "resilience": "src/configuration/resilience2.json",
+  "weights": "src/configuration/weights2.json"
+}

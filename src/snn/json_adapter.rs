@@ -2,6 +2,9 @@
 //!
 //! This module defines several structs representing data structures commonly used when
 //! reading from or writing to JSON files.
+use std::fs::File;
+use std::{fs};
+use std::io::{ErrorKind, Write};
 use crate::snn::model::lif::*;
 use crate::NN;
 
@@ -71,7 +74,7 @@ impl ConfigurationJson {
     /// A vector containing neuron configurations (`ConfigurationJson`) on success.
 
     pub fn read_from_file(pathname: &str) -> Vec<ConfigurationJson> {
-        let content = std::fs::read_to_string(pathname).unwrap();
+        let content = fs::read_to_string(pathname).unwrap();
         let configuration_json_vec: Vec<ConfigurationJson> =
             serde_json::from_str(&content).unwrap();
 
@@ -100,7 +103,7 @@ impl ConfigurationJson {
 
 impl InputJson {
     pub fn read_input_from_file(pathname: &str) -> Vec<(u128, Vec<u128>)> {
-        let content = std::fs::read_to_string(pathname).unwrap();
+        let content = fs::read_to_string(pathname).unwrap();
         // println!("content: {}", content);
         let input_json_vec: Vec<InputJson> = serde_json::from_str(&content).ok().unwrap();
 
@@ -115,7 +118,7 @@ impl InputJson {
 
 impl LayerWeightsJson {
     pub fn read_weights_from_file(pathname: &str) -> Vec<LayerWeightsJson> {
-        let content = std::fs::read_to_string(pathname).unwrap();
+        let content = fs::read_to_string(pathname).unwrap();
         let weight_json_vec: Vec<LayerWeightsJson> = serde_json::from_str(&content).unwrap();
 
         // println!("WEIGHTS:");
@@ -154,7 +157,7 @@ impl NeuronJson {
         weights_pathname: &str,
         configurations_pathname: &str,
     ) -> Result<NN<LeakyIntegrateFire>, String> {
-        let content = std::fs::read_to_string(layers_pathname).unwrap();
+        let content = fs::read_to_string(layers_pathname).unwrap();
         let neuron_json_list: Vec<NeuronJson> = serde_json::from_str(&content).ok().unwrap();
         let mut neuron_box_vec: Vec<NeuronBox> = Vec::new();
         // print!("{:?}", neuron_json_list);
@@ -327,7 +330,7 @@ impl ResilienceJson {
     /// A `Result` containing `ResilienceJson` on success or an error message `String` on failure.
 
     pub fn read_from_file(pathname: &str) -> Result<ResilienceJson, String> {
-        let content = std::fs::read_to_string(pathname).unwrap();
+        let content = fs::read_to_string(pathname).unwrap();
         let resilience_configuration_json: ResilienceJson =
             serde_json::from_str(&content).ok().unwrap();
 
@@ -352,5 +355,59 @@ impl ResilienceJson {
             stuck_type,
             times: self.times as u128,
         })
+    }
+}
+
+
+/// Represents the paths.
+#[derive(Debug, Deserialize, Clone)]
+pub struct PathsJson {
+    pub configurations: String,
+    pub input_spikes: String,
+    pub layers: String,
+    pub resilience: String,
+    pub weights: String
+}
+
+impl PathsJson {
+    /// Reads the paths from a JSON file and returns a `Result`.
+    ///
+    /// # Arguments
+    ///
+    /// * `pathname` - A string slice representing the path to the JSON file.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` containing `PathsJson` on success or an error message `String` on failure.
+
+    pub fn read_from_file(pathname: &str) -> Result<PathsJson, String> {
+        match fs::read_to_string(pathname) {
+            Ok(data) => {
+                match serde_json::from_str(&data) {
+                    Ok(paths_json) => Ok(paths_json),
+                    Err(_) => Err("Errore durante la deserializzazione del file JSON.".to_string()),
+                }
+            }
+            Err(ref e) if e.kind() == ErrorKind::NotFound => {
+                let default_content = r#"{
+  "configurations": "src/configuration/configurations.json",
+  "input_spikes": "src/configuration/input_spikes.json",
+  "layers": "src/configuration/layers.json",
+  "resilience": "src/configuration/resilience.json",
+  "weights": "src/configuration/weights.json"
+}"#;
+                match File::create(pathname) {
+                    Ok(mut file) => {
+                        // Scriviamo il contenuto di default nel file appena creato.
+                        if let Err(e) = file.write_all(default_content.as_bytes()) {
+                            return Err(format!("Errore durante la scrittura nel file: {}", e));
+                        }
+                        Err("File dei path creato. Si prega di compilare con i path appropriati.".to_string())
+                    }
+                    Err(e) => Err(format!("Errore durante la creazione del file: {}", e)),
+                }
+            }
+            _ => Err(format!("Error: unexpected"))
+        }
     }
 }
