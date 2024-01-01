@@ -328,13 +328,13 @@ fn test_nn_multiple_layer_from_file() {
 #[test]
 fn test_nn_multiple_layer_from_file2() {
     let nn =
-        NeuronJson::read_from_file("./tests/layers2.json", "./tests/weights2.json", "./tests/configurations2.json");
+        NeuronJson::read_from_file("src/configuration/layers2.json", "src/configuration/weights2.json", "src/configuration/configurations2.json");
 
-    let input = InputJson::read_input_from_file("./tests/input_spikes2.json");
+    let input = InputJson::read_input_from_file("src/configuration/input_spikes2.json");
 
 
     // let configuration: Resilience = Resilience::new(vec!["Neurons".to_string()], Stuck::One, 1000);
-    let configuration: Result<Resilience,String> = ResilienceJson::read_from_file("./tests/resilience2.json").expect("Errore lettura file").to_resilience();
+    let configuration: Result<Resilience,String> = ResilienceJson::read_from_file("src/configuration/resilience2.json").expect("Errore lettura file").to_resilience();
     configuration.ok().unwrap().execute_resilience_test(nn.clone().unwrap(),input);
     return;
 }

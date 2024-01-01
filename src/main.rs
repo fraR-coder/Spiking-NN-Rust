@@ -1,7 +1,9 @@
 pub mod snn;
 
 use crate::snn::console_input_nn_creator::*;
+//use crate::snn::model::lif::{Configuration, LeakyIntegrateFire, LifNeuron};
 use crate::snn::model::Model;
+use crate::snn::nn::NN;
 use crate::snn::resilience::Resilience;
 use snn::console_input_nn_creator::create_neural_network_from_user_input;
 use snn::json_adapter::{InputJson, NeuronJson};
