@@ -126,7 +126,7 @@ impl Resilience {
             let component = self.get_rand_component().to_lowercase();
 
             match &component as &str {
-                "neurons" | "n" | "neu" | "neuron" => {
+                "neurons" | "n" | "neu" | "neuron" | "neuroni" | "neurone" => {
                     // println!("chose neuron");
                     let rand_layer_idx = rand::thread_rng().gen_range(0..snn_tmp.get_num_layers());
                     let rand_neuron_idx = rand::thread_rng()
@@ -140,11 +140,7 @@ impl Resilience {
                             .to_string(),
                     );
                 }
-                "vmem"
-                | "potenziale di membrana"
-                | "membrane potential"
-                | "membrane"
-                | "membrana" => {
+                "vmem" | "potenziale di membrana" | "membrane potential" | "membrane" | "membrana" | "v_mem"=> {
                     // println!("chose vmem");
                     let rand_layer_idx = rand::thread_rng().gen_range(0..snn_tmp.get_num_layers());
                     let rand_neuron_idx = rand::thread_rng()
@@ -156,7 +152,7 @@ impl Resilience {
                     )
                 }
 
-                "fullAdder" | "full adder" | "full-adder" | "full_adder" | "adder" => {
+                "fullAdder" | "full adder" | "full-adder" | "full_adder" | "adder" | "sommatore" => {
                     // println!("chose full adder");
                     let rand_layer_idx = rand::thread_rng().gen_range(0..snn_tmp.get_num_layers());
                     let rand_neuron_idx = rand::thread_rng()
