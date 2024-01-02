@@ -1,42 +1,30 @@
 [
     {
         "configuration": 0,
-        
-        "v_rest": 2.0, 
-        "v_reset": 0.5, 
-        "v_threshold": 1.1, 
+        "v_rest": 2.0,
+        "v_reset": 0.5,
+        "v_threshold": 1.1,
         "tau": 1.0
-        
     },
-
     {
         "configuration": 1,
-        
-        "v_rest": 2.0, 
-        "v_reset": 0.5, 
-        "v_threshold": 2.6, 
+        "v_rest": 2.0,
+        "v_reset": 0.5,
+        "v_threshold": 2.6,
         "tau": 1.0
-        
     },
-
     {
         "configuration": 2,
-        
-        "v_rest": 1.7, 
-        "v_reset": 0.3, 
-        "v_threshold": 3.4, 
+        "v_rest": 1.7,
+        "v_reset": 0.3,
+        "v_threshold": 3.4,
         "tau": 1.0
-        
     },
-
     {
         "configuration": 3,
-        
-        "v_rest": 2.0, 
-        "v_reset": 0.8, 
-        "v_threshold": 4.3, 
+        "v_rest": 2.0,
+        "v_reset": 0.8,
+        "v_threshold": 4.3,
         "tau": 1.0
-        
     }
-    
 ]

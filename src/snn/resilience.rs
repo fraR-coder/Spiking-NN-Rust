@@ -57,6 +57,7 @@ use crate::snn::model::lif::*;
 use crate::NN;
 use rand::Rng;
 use std::sync::{Arc, Mutex};
+use crate::snn::Spike;
 
 use super::model::Stuck;
 
@@ -110,13 +111,15 @@ impl Resilience {
         &self,
         snn: NN<LeakyIntegrateFire>,
         input: Vec<(u128, Vec<u128>)>,
-    ) {
+    ) -> Arc<Mutex<Vec<(u128, Vec<u128>)>>> {
 
         let mut count_right_outputs: u64 = 0;
         let time_init = std::time::Instant::now();
         let right_output = snn.clone().solve_multiple_vec_spike(input.clone());
         // println!("{:?}", right_output);
-        println!("Executing resilience test for given Spiking Neural Network");
+        println!("Executing resilience test for given Spiking Neural Network. Total number of input spikes: {:?}", Spike::vec_of_all_spikes(input.clone()));
+        println!("Total number of input spikes: {}", Spike::vec_of_all_spikes(input.clone()).len());
+        println!("Total number of output spikes: {}", Spike::vec_of_all_spikes(right_output.lock().unwrap().clone()).len());
         for _ in 0..self.times {
             let mut snn_tmp = snn.clone();
             //println!(solution);
@@ -193,6 +196,7 @@ impl Resilience {
             count_right_outputs as f64 / self.times as f64 * 100.0,
             std::time::Instant::now()-time_init
         );
+        return right_output;
     }
 }
 pub fn are_equal(

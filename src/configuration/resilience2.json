@@ -1,5 +1,5 @@
 {
-  "components": ["comparator"],
-  "stuck": "0",
+  "components": ["comparator", "full adder"],
+  "stuck": "transient",
   "times": 10000
 }

@@ -263,6 +263,8 @@ impl NeuronJson {
                 let current_layer_weights = &weights_from_file[current_layer];
 
                 // Create the layer
+                // println!("I neuroni del layer ? sono {:?}:",layer_neurons.clone());
+                // println!("I pesi del layer ? sono ({}x{}) {:?}:",current_layer_weights.input_weights.cols,current_layer_weights.input_weights.rows,current_layer_weights.input_weights.data.clone());
                 nn = nn
                     .clone()
                     .layer(
@@ -290,7 +292,10 @@ impl NeuronJson {
 
         if !layer_neurons.is_empty() {
             let current_layer_weights = &weights_from_file[current_layer];
-            nn.clone()
+            // println!("I neuroni del layer ? sono {:?}:",layer_neurons.clone());
+            // println!("I pesi del layer ? sono ({}x{}) {:?}:",current_layer_weights.input_weights.cols,current_layer_weights.input_weights.rows,current_layer_weights.input_weights.data.clone());
+
+            nn = nn.clone()
                 .layer(
                     layer_neurons.clone(),
                     DMatrix::from_vec(
